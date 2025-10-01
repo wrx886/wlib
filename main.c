@@ -1,15 +1,20 @@
 #include "wlib.h"
 
-// 定义 int64 类型的数组
-w_Array_define(int64_t);
+w_NDArray_define(int);
 
 int main()
 {
-    w_Array(int64_t) arr;
-    w_Array_init(int64_t)(&arr, 16);
+    w_NDArray(int) ndarray;
+    w_NDArray_init(int)(&ndarray, 5, 1LL, 2LL, 3LL, 4ll, 5ll);
 
-    w_Array_set(int64_t)(&arr, 0, 123456);
-    printf("%lld\n", w_Array_get(int64_t)(&arr, 0));
+    int64_t *shape = w_NDArray_shape(int)(&ndarray);
+    for (int64_t i = 0; i < w_NDArray_shapeSize(int)(&ndarray); i++)
+    {
+        printf("%d\n", shape[i]);
+    }
 
-    w_Array_deinit(int64_t)(&arr);
+    w_NDArray_set(int)(&ndarray, 1, 0, 0, 0, 0, 0);
+    printf("%d\n", w_NDArray_get(int)(&ndarray, 0, 0, 0, 0, 0));
+
+    w_NDArray_deinit(int)(&ndarray);
 }
