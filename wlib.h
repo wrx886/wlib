@@ -92,6 +92,7 @@
         w_assert(this != NULL);                                         \
         w_assert(size >= 0);                                            \
         this->elementData = w_malloc(sizeof(T) * size);                 \
+        w_assert(this->elementData != NULL);                            \
         this->size = size;                                              \
     }
 
@@ -238,6 +239,7 @@
         w_assert(this->shape != NULL);                          \
         w_free(this->elementData);                              \
         w_free(this->shape);                                    \
+        memset(this, 0, sizeof(w_NDArray(T)));                  \
     }
 
 // 多维数组下标映射
@@ -356,5 +358,279 @@
     w_NDArray_set_define_(T);    \
     w_NDArray_shape_define_(T);  \
     w_NDArray_shapeSize_define_(T);
+
+// ========================================================================================================================================================
+//  列表
+// ========================================================================================================================================================
+
+// 列表类型
+#define w_List(T) w_concat(w_List_, T)
+
+// 列表类型定义
+#define w_List_type_define_(T)       \
+    typedef struct                   \
+    {                                \
+        T *elementData;              \
+        int64_t size;     /* 大小 */ \
+        int64_t capacity; /* 容量 */ \
+    } w_List(T);
+
+// 列表初始化
+#define w_List_initWithCapacity(T) w_concat(w_List(T), _initWithCapacity)
+#define w_List_initWithCapacity_define_(T)                                                \
+    /**                                                                                   \
+     * 列表初始化                                                                    \
+     * @param this 列表                                                                 \
+     * @param initCapacity 初始容量                                                   \
+     * @return void                                                                       \
+     */                                                                                   \
+    static inline void w_List_initWithCapacity(T)(w_List(T) * this, int64_t initCapacity) \
+    {                                                                                     \
+        w_assert(this != NULL);                                                           \
+        this->elementData = w_malloc(sizeof(T) * initCapacity);                           \
+        w_assert(this->elementData != NULL);                                              \
+        this->size = 0;                                                                   \
+        this->capacity = initCapacity;                                                    \
+    }
+
+// 列表初始化
+#define w_List_init(T) w_concat(w_List(T), _init)
+#define w_List_init_define_(T)                          \
+    /**                                                 \
+     * 列表初始化                                  \
+     * @param this 列表                               \
+     */                                                 \
+    static inline void w_List_init(T)(w_List(T) * this) \
+    {                                                   \
+        w_List_initWithCapacity(T)(this, 16);           \
+    }
+
+// 列表销毁
+#define w_List_deinit(T) w_concat(w_List(T), _deinit)
+#define w_List_deinit_define_(T)                          \
+    /**                                                   \
+     * 列表销毁                                       \
+     * @param this 列表                                 \
+     * @return void                                       \
+     */                                                   \
+    static inline void w_List_deinit(T)(w_List(T) * this) \
+    {                                                     \
+        w_assert(this != NULL);                           \
+        w_assert(this->elementData != NULL);              \
+        w_free(this->elementData);                        \
+        memset(this, 0, sizeof(w_List(T)));               \
+    }
+
+// 列表获取大小
+#define w_List_size(T) w_concat(w_List(T), _size)
+#define w_List_size_define_(T)                             \
+    /**                                                    \
+     * 列表获取大小                                  \
+     * @param this 列表                                  \
+     * @return int64_t 大小                              \
+     */                                                    \
+    static inline int64_t w_List_size(T)(w_List(T) * this) \
+    {                                                      \
+        w_assert(this != NULL);                            \
+        w_assert(this->elementData != NULL);               \
+        return this->size;                                 \
+    }
+
+// 列表获取容量
+#define w_List_capacity(T) w_concat(w_List(T), _capacity)
+#define w_List_capacity_define_(T)                             \
+    /**                                                        \
+     * 列表获取容量                                      \
+     * @param this 列表                                      \
+     * @return int64_t 容量                                  \
+     */                                                        \
+    static inline int64_t w_List_capacity(T)(w_List(T) * this) \
+    {                                                          \
+        w_assert(this != NULL);                                \
+        w_assert(this->elementData != NULL);                   \
+        return this->capacity;                                 \
+    }
+
+// 列表获取元素
+#define w_List_get(T) w_concat(w_List(T), _get)
+#define w_List_get_define_(T)                                      \
+    /**                                                            \
+     * 列表获取元素                                          \
+     * @param this 列表                                          \
+     * @param index 索引                                         \
+     * @return T 元素                                            \
+     */                                                            \
+    static inline T w_List_get(T)(w_List(T) * this, int64_t index) \
+    {                                                              \
+        w_assert(this != NULL);                                    \
+        w_assert(this->elementData != NULL);                       \
+        w_assert(index >= 0 && index < this->size);                \
+        return this->elementData[index];                           \
+    }
+
+// 列表设置元素
+#define w_List_set(T) w_concat(w_List(T), _set)
+#define w_List_set_define_(T)                                                    \
+    /**                                                                          \
+     * 列表设置元素                                                        \
+     * @param this 列表                                                        \
+     * @param index 索引                                                       \
+     * @param element 元素                                                     \
+     * @return void                                                              \
+     */                                                                          \
+    static inline void w_List_set(T)(w_List(T) * this, int64_t index, T element) \
+    {                                                                            \
+        w_assert(this != NULL);                                                  \
+        w_assert(this->elementData != NULL);                                     \
+        w_assert(index >= 0 && index < this->size);                              \
+        this->elementData[index] = element;                                      \
+    }
+
+// 列表添加元素
+#define w_List_add(T) w_concat(w_List(T), _add)
+#define w_List_add_define_(T)                                                    \
+    /**                                                                          \
+     * 列表添加元素                                                        \
+     * @param this 列表                                                        \
+     * @param index 索引（插入到这个位置）                            \
+     * @param element 元素                                                     \
+     */                                                                          \
+    static inline void w_List_add(T)(w_List(T) * this, int64_t index, T element) \
+    {                                                                            \
+        /* 断言 */                                                               \
+        w_assert(this != NULL);                                                  \
+        w_assert(this->elementData != NULL);                                     \
+        w_assert(index >= 0 && index <= this->size);                             \
+                                                                                 \
+        /* 扩容 */                                                               \
+        if (this->size >= this->capacity)                                        \
+        {                                                                        \
+            this->capacity *= 2;                                                 \
+            T *newElementData = w_malloc(this->capacity * sizeof(T));            \
+            w_assert(newElementData != NULL);                                    \
+            memcpy(newElementData, this->elementData, this->size * sizeof(T));   \
+            w_free(this->elementData);                                           \
+            this->elementData = newElementData;                                  \
+        }                                                                        \
+                                                                                 \
+        /* 添加元素 */                                                           \
+        for (int64_t i = this->size; i > index; i--)                             \
+        {                                                                        \
+            this->elementData[i] = this->elementData[i - 1];                     \
+        }                                                                        \
+        this->elementData[index] = element;                                      \
+        this->size++;                                                            \
+    }
+
+// 列表删除元素
+#define w_List_remove(T) w_concat(w_List(T), _remove)
+#define w_List_remove_define_(T)                                      \
+    /**                                                               \
+     * 列表删除元素                                             \
+     * @param this 列表                                             \
+     * @param index 索引                                            \
+     * @return T 删除的元素                                      \
+     */                                                               \
+    static inline T w_List_remove(T)(w_List(T) * this, int64_t index) \
+    {                                                                 \
+        /* 断言 */                                                    \
+        w_assert(this != NULL);                                       \
+        w_assert(this->elementData != NULL);                          \
+        w_assert(index >= 0 && index < this->size);                   \
+                                                                      \
+        /* 删除元素 */                                                \
+        T element = this->elementData[index];                         \
+        for (int64_t i = index; i < this->size - 1; i++)              \
+        {                                                             \
+            this->elementData[i] = this->elementData[i + 1];          \
+        }                                                             \
+        this->size--;                                                 \
+        return element;                                               \
+    }
+
+// 列表是否为空
+#define w_List_isEmpty(T) w_concat(w_List(T), _isEmpty)
+#define w_List_isEmpty_define_(T)                          \
+    /**                                                    \
+     * 列表是否为空                                  \
+     * @param this 列表                                  \
+     * @return bool true:为空 false:不为空            \
+     */                                                    \
+    static inline bool w_List_isEmpty(T)(w_List(T) * this) \
+    {                                                      \
+        w_assert(this != NULL);                            \
+        w_assert(this->elementData != NULL);               \
+        return this->size == 0;                            \
+    }
+
+// 列表插入元素到头部
+#define w_List_addFirst(T) w_concat(w_List(T), _addFirst)
+#define w_List_addFirst_define_(T)                                     \
+    /**                                                                \
+     * 列表插入元素到头部                                     \
+     * @param this 列表                                              \
+     * @param element 元素                                           \
+     */                                                                \
+    static inline void w_List_addFirst(T)(w_List(T) * this, T element) \
+    {                                                                  \
+        w_List_add(T)(this, element, 0);                               \
+    }
+
+// 列表插入元素到尾部
+#define w_List_addLast(T) w_concat(w_List(T), _addLast)
+#define w_List_addLast_define_(T)                                     \
+    /**                                                               \
+     * 列表插入元素到尾部                                    \
+     * @param this 列表                                             \
+     * @param element 元素                                          \
+     */                                                               \
+    static inline void w_List_addLast(T)(w_List(T) * this, T element) \
+    {                                                                 \
+        w_List_add(T)(this, element, this->size);                     \
+    }
+
+// 列表删除头部元素
+#define w_List_removeFirst(T) w_concat(w_List(T), _removeFirst)
+#define w_List_removeFirst_define_(T)                       \
+    /**                                                     \
+     * 列表删除头部元素                             \
+     * @param this 列表                                   \
+     * @return T 删除的元素                            \
+     */                                                     \
+    static inline T w_List_removeFirst(T)(w_List(T) * this) \
+    {                                                       \
+        return w_List_remove(T)(this, 0);                   \
+    }
+
+// 列表删除尾部元素
+#define w_List_removeLast(T) w_concat(w_List(T), _removeLast)
+#define w_List_removeLast_define_(T)                       \
+    /**                                                    \
+     * 列表删除尾部元素                            \
+     * @param this 列表                                  \
+     * @return T 删除的元素                           \
+     */                                                    \
+    static inline T w_List_removeLast(T)(w_List(T) * this) \
+    {                                                      \
+        return w_List_remove(T)(this, this->size - 1);     \
+    }
+
+// 列表定义
+#define w_List_define(T)                \
+    w_List_type_define_(T);             \
+    w_List_initWithCapacity_define_(T); \
+    w_List_init_define_(T);             \
+    w_List_deinit_define_(T);           \
+    w_List_size_define_(T);             \
+    w_List_capacity_define_(T);         \
+    w_List_get_define_(T);              \
+    w_List_set_define_(T);              \
+    w_List_add_define_(T);              \
+    w_List_remove_define_(T);           \
+    w_List_isEmpty_define_(T);          \
+    w_List_addFirst_define_(T);         \
+    w_List_addLast_define_(T);          \
+    w_List_removeFirst_define_(T);      \
+    w_List_removeLast_define_(T);
 
 #endif
