@@ -586,7 +586,7 @@
      */                                                               \
     static inline void w_List_addLast(T)(w_List(T) * this, T element) \
     {                                                                 \
-        w_List_add(T)(this, element, this->size);                     \
+        w_List_add(T)(this, this->size, element);                     \
     }
 
 // 列表删除头部元素
