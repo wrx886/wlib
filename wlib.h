@@ -1167,6 +1167,7 @@ typedef struct
     }
 
 // Set 定义
+// 定义 Set 需要定义 T 的 w_hash 和 w_equals 函数
 #define w_Set_define(T)             \
     w_Set_type_define_(T);          \
     w_Set_init_define_(T);          \
