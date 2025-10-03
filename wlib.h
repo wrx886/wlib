@@ -638,16 +638,16 @@
 // ========================================================================================================================================================
 
 // MapEntry 类型
-#define w_MapEntry(K, V) w_concat(w_concat(w_concat(w_MapEntry_, K), _), V)
+#define w_Map_Entry(K, V) w_concat(w_concat(w_concat(w_Map_Entry_, K), _), V)
 
 // MapEntry 定义
-#define w_MapEntry_type_define_(K, V)   \
-    typedef struct w_MapEntry(K, V)     \
+#define w_Map_Entry_type_define_(K, V)   \
+    typedef struct w_Map_Entry(K, V)     \
     {                                   \
         K key;                          \
         V value;                        \
-        struct w_MapEntry(K, V) * next; \
-    } w_MapEntry(K, V);
+        struct w_Map_Entry(K, V) * next; \
+    } w_Map_Entry(K, V);
 
 // Map 类型
 #define w_Map(K, V) w_concat(w_concat(w_concat(w_Map_, K), _), V)
@@ -656,7 +656,7 @@
 #define w_Map_type_define_(K, V)       \
     typedef struct w_Map(K, V)         \
     {                                  \
-        w_MapEntry(K, V) * *entryData; \
+        w_Map_Entry(K, V) * *entryData; \
         int64_t entryDataSize;         \
         int64_t size;                  \
     } w_Map(K, V);
@@ -672,9 +672,9 @@
     static inline void w_Map_init(K, V)(w_Map(K, V) * this)                           \
     {                                                                                 \
         this->entryDataSize = 16;                                                     \
-        this->entryData = w_malloc(sizeof(w_MapEntry(K, V) *) * this->entryDataSize); \
+        this->entryData = w_malloc(sizeof(w_Map_Entry(K, V) *) * this->entryDataSize); \
         w_assert(this->entryData != NULL);                                            \
-        memset(this->entryData, 0, sizeof(w_MapEntry(K, V) *) * this->entryDataSize); \
+        memset(this->entryData, 0, sizeof(w_Map_Entry(K, V) *) * this->entryDataSize); \
         this->size = 0;                                                               \
     }
 
@@ -692,11 +692,11 @@
         for (int64_t i = 0; i < this->entryDataSize; i++)     \
         {                                                     \
             /* 链表头 */                                      \
-            w_MapEntry(K, V) *entry = this->entryData[i];     \
+            w_Map_Entry(K, V) *entry = this->entryData[i];     \
             while (entry != NULL)                             \
             {                                                 \
                 /* 释放节点 */                                \
-                w_MapEntry(K, V) *next = entry->next;         \
+                w_Map_Entry(K, V) *next = entry->next;         \
                 w_free(entry);                                \
                 entry = next;                                 \
             }                                                 \
@@ -715,7 +715,7 @@
      * @param value 值                                                                                                  \
      * @return bool 是否添加新的元素                                                                             \
      */                                                                                                                  \
-    static inline bool w_Map_putToEntryData_(K, V)(w_MapEntry(K, V) * *entryData, int64_t entryDataSize, K key, V value) \
+    static inline bool w_Map_putToEntryData_(K, V)(w_Map_Entry(K, V) * *entryData, int64_t entryDataSize, K key, V value) \
     {                                                                                                                    \
         w_assert(entryData != NULL);                                                                                     \
         w_assert(entryDataSize > 0);                                                                                     \
@@ -723,7 +723,7 @@
         int64_t index = w_hash(K)(&key) & (entryDataSize - 1);                                                           \
                                                                                                                          \
         /* 链表头 */                                                                                                     \
-        w_MapEntry(K, V) *entry = entryData[index];                                                                      \
+        w_Map_Entry(K, V) *entry = entryData[index];                                                                      \
         while (entry != NULL)                                                                                            \
         {                                                                                                                \
             /* 键相等 */                                                                                                 \
@@ -737,7 +737,7 @@
         }                                                                                                                \
                                                                                                                          \
         /* 创建节点 */                                                                                                   \
-        entry = w_malloc(sizeof(w_MapEntry(K, V)));                                                                      \
+        entry = w_malloc(sizeof(w_Map_Entry(K, V)));                                                                      \
         w_assert(entry != NULL);                                                                                         \
         entry->key = key;                                                                                                \
         entry->value = value;                                                                                            \
@@ -758,14 +758,14 @@
     static inline void w_Map_realloc_(K, V)(w_Map(K, V) * this)                                               \
     {                                                                                                         \
         /* 申请新的键值对数组 */                                                                              \
-        w_MapEntry(K, V) **newEntryData = w_malloc(sizeof(w_MapEntry(K, V) *) * this->entryDataSize * 2);     \
+        w_Map_Entry(K, V) **newEntryData = w_malloc(sizeof(w_Map_Entry(K, V) *) * this->entryDataSize * 2);     \
         w_assert(newEntryData != NULL);                                                                       \
-        memset(newEntryData, 0, sizeof(w_MapEntry(K, V) *) * this->entryDataSize * 2);                        \
+        memset(newEntryData, 0, sizeof(w_Map_Entry(K, V) *) * this->entryDataSize * 2);                        \
                                                                                                               \
         /* 将旧键值对数组中的键值对放置到新键值对数组中 */                                                    \
         for (int64_t i = 0; i < this->entryDataSize; i++)                                                     \
         {                                                                                                     \
-            w_MapEntry(K, V) *entry = this->entryData[i];                                                     \
+            w_Map_Entry(K, V) *entry = this->entryData[i];                                                     \
             while (entry != NULL)                                                                             \
             {                                                                                                 \
                 w_Map_putToEntryData_(K, V)(newEntryData, this->entryDataSize * 2, entry->key, entry->value); \
@@ -831,7 +831,7 @@
         int64_t index = w_hash(K)(&key) & (this->entryDataSize - 1); \
                                                                      \
         /* 查找 */                                                   \
-        w_MapEntry(K, V) *entry = this->entryData[index];            \
+        w_Map_Entry(K, V) *entry = this->entryData[index];            \
         while (entry != NULL)                                        \
         {                                                            \
             if (w_equals(K)(&(entry->key), &key))                    \
@@ -863,7 +863,7 @@
                                                                      \
         /* 删除 */                                                   \
         int64_t index = w_hash(K)(&key) & (this->entryDataSize - 1); \
-        w_MapEntry(K, V) *entry = this->entryData[index];            \
+        w_Map_Entry(K, V) *entry = this->entryData[index];            \
         if (entry == NULL)                                           \
         {                                                            \
             return;                                                  \
@@ -881,7 +881,7 @@
         {                                                            \
             if (w_equals(K)(&(entry->next->key), &key))              \
             {                                                        \
-                w_MapEntry(K, V) *next = entry->next;                \
+                w_Map_Entry(K, V) *next = entry->next;                \
                 entry->next = next->next;                            \
                 w_free(next);                                        \
                 this->size--;                                        \
@@ -926,7 +926,7 @@
                                                                           \
         /* 索引 */                                                        \
         int64_t index = w_hash(K)(&key) & (this->entryDataSize - 1);      \
-        w_MapEntry(K, V) *entry = this->entryData[index];                 \
+        w_Map_Entry(K, V) *entry = this->entryData[index];                 \
         while (entry != NULL)                                             \
         {                                                                 \
             if (w_equals(K)(&(entry->key), &key))                         \
@@ -945,7 +945,7 @@
     {                                     \
         w_Map(K, V) * map;                \
         int64_t index;                    \
-        w_MapEntry(K, V) * entry;         \
+        w_Map_Entry(K, V) * entry;         \
     } w_Map_Iterator(K, V);
 
 // Map 获取迭代器
@@ -971,9 +971,9 @@
     /**                                                                                                   \
      * 迭代器获取下一个键值对（可以修改值，但不能修改键，会同步到 Map 中） \
      * @param this 迭代器                                                                              \
-     * @return w_MapEntry 键值对，如果为 NULL 则迭代结束                                      \
+     * @return w_Map_Entry 键值对，如果为 NULL 则迭代结束                                      \
      */                                                                                                   \
-    static inline w_MapEntry(K, V) * w_Map_Iterator_next(K, V)(w_Map_Iterator(K, V) * this)               \
+    static inline w_Map_Entry(K, V) * w_Map_Iterator_next(K, V)(w_Map_Iterator(K, V) * this)               \
     {                                                                                                     \
         w_assert(this != NULL);                                                                           \
         w_assert(this->map != NULL);                                                                      \
@@ -992,7 +992,7 @@
         }                                                                                                 \
                                                                                                           \
         /* 返回并移动到下一个位置 */                                                                      \
-        w_MapEntry(K, V) *entry = this->entry;                                                            \
+        w_Map_Entry(K, V) *entry = this->entry;                                                            \
         this->entry = this->entry->next;                                                                  \
         return entry;                                                                                     \
     }
@@ -1000,7 +1000,7 @@
 // Map 定义
 // 定义 Map 需要定义 K 的 w_hash 和 w_equals 函数
 #define w_Map_define(K, V)              \
-    w_MapEntry_type_define_(K, V);      \
+    w_Map_Entry_type_define_(K, V);      \
     w_Map_type_define_(K, V);           \
     w_Map_init_define_(K, V);           \
     w_Map_deinit_define_(K, V);         \
