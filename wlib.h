@@ -1226,37 +1226,49 @@ typedef struct
     }
 
 // 数字类型比较函数
-#define w_number_compare_define_(T)              \
-    static inline int w_compare(T)(T * a, T * b) \
-    {                                            \
-        return *a - *b;                          \
+#define w_number_compare_define_(T)                  \
+    static inline int64_t w_compare(T)(T * a, T * b) \
+    {                                                \
+        T sub = *a - *b;                             \
+        if (sub < 0)                                 \
+        {                                            \
+            return -1;                               \
+        }                                            \
+        else if (sub > 0)                            \
+        {                                            \
+            return 1;                                \
+        }                                            \
+        else                                         \
+        {                                            \
+            return 0;                                \
+        }                                            \
     }
 
 // 数字比较和哈希函数类型定义
-#define w_number_type_hash_and_equals_define_(T) \
+#define w_number_type_hash_and_compare_define_(T) \
     w_number_hash_define_(T);                    \
     w_number_equals_define_(T);                  \
     w_number_compare_define_(T);
 
 // 使用宏定义定义所有数字类型的比较和哈希函数
-#define w_number_type_hash_and_equals_define_all()       \
+#define w_number_type_hash_and_compare_define_all()       \
     /* stdint */                                         \
-    w_number_type_hash_and_equals_define_(int8_t);       \
-    w_number_type_hash_and_equals_define_(int16_t);      \
-    w_number_type_hash_and_equals_define_(int32_t);      \
-    w_number_type_hash_and_equals_define_(int64_t);      \
-    w_number_type_hash_and_equals_define_(uint8_t);      \
-    w_number_type_hash_and_equals_define_(uint16_t);     \
-    w_number_type_hash_and_equals_define_(uint32_t);     \
-    w_number_type_hash_and_equals_define_(uint64_t);     \
+    w_number_type_hash_and_compare_define_(int8_t);       \
+    w_number_type_hash_and_compare_define_(int16_t);      \
+    w_number_type_hash_and_compare_define_(int32_t);      \
+    w_number_type_hash_and_compare_define_(int64_t);      \
+    w_number_type_hash_and_compare_define_(uint8_t);      \
+    w_number_type_hash_and_compare_define_(uint16_t);     \
+    w_number_type_hash_and_compare_define_(uint32_t);     \
+    w_number_type_hash_and_compare_define_(uint64_t);     \
     /* 关键字型 */                                       \
-    w_number_type_hash_and_equals_define_(bool);         \
-    w_number_type_hash_and_equals_define_(char);         \
-    w_number_type_hash_and_equals_define_(short);        \
-    w_number_type_hash_and_equals_define_(int);          \
-    w_number_type_hash_and_equals_define_(long);         \
+    w_number_type_hash_and_compare_define_(bool);         \
+    w_number_type_hash_and_compare_define_(char);         \
+    w_number_type_hash_and_compare_define_(short);        \
+    w_number_type_hash_and_compare_define_(int);          \
+    w_number_type_hash_and_compare_define_(long);         \
     /* 标识符链接不支持空格，所以没有 long long 类型  */ \
-    w_number_type_hash_and_equals_define_(float);        \
-    w_number_type_hash_and_equals_define_(double);
+    w_number_type_hash_and_compare_define_(float);        \
+    w_number_type_hash_and_compare_define_(double);
 
 #endif
