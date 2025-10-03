@@ -769,8 +769,9 @@
             while (entry != NULL)                                                                             \
             {                                                                                                 \
                 w_Map_putToEntryData_(K, V)(newEntryData, this->entryDataSize * 2, entry->key, entry->value); \
-                entry = entry->next;                                                                          \
+                w_Map_Entry(K, V) *next = entry->next;                                                        \
                 w_free(entry);                                                                                \
+                entry = next;                                                                                 \
             }                                                                                                 \
         }                                                                                                     \
                                                                                                               \
