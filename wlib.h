@@ -275,7 +275,7 @@
     /**                                                                           \
      * 多维数组下标映射                                                   \
      * @param this 多维数组                                                   \
-     * @param indices 索引                                                      \
+     * @param indices 索引（必须传入 int64 类型，否则会报错）     \
      * @return int64_t 索引                                                     \
      */                                                                           \
     static inline int64_t w_NDArray_map_(T)(w_NDArray(T) * this, va_list indices) \
@@ -306,20 +306,20 @@
 
 // 多维数组获取元素
 #define w_NDArray_get(T) w_concat(w_NDArray(T), _get)
-#define w_NDArray_get_define_(T)                               \
-    /**                                                        \
-     * 多维数组获取元素                                \
-     * @param this 多维数组                                \
-     * @param ... 索引                                       \
-     * @return T 元素                                        \
-     */                                                        \
-    static inline T w_NDArray_get(T)(w_NDArray(T) * this, ...) \
-    { /* 返回 */                                               \
-        va_list indices;                                       \
-        va_start(indices, this);                               \
-        int64_t index = w_NDArray_map_(T)(this, indices);      \
-        va_end(indices);                                       \
-        return this->elementData[index];                       \
+#define w_NDArray_get_define_(T)                                          \
+    /**                                                                   \
+     * 多维数组获取元素                                           \
+     * @param this 多维数组                                           \
+     * @param ... 索引（必须传入 int64 类型，否则会报错） \
+     * @return T 元素                                                   \
+     */                                                                   \
+    static inline T w_NDArray_get(T)(w_NDArray(T) * this, ...)            \
+    { /* 返回 */                                                          \
+        va_list indices;                                                  \
+        va_start(indices, this);                                          \
+        int64_t index = w_NDArray_map_(T)(this, indices);                 \
+        va_end(indices);                                                  \
+        return this->elementData[index];                                  \
     }
 
 // 多维数组设置元素
@@ -329,7 +329,7 @@
      * 多维数组设置元素                                            \
      * @param this 多维数组                                            \
      * @param value 值                                                    \
-     * @param ... 索引                                                   \
+     * @param ... 索引（必须传入 int64 类型，否则会报错）  \
      * @return void                                                        \
      */                                                                    \
     static inline void w_NDArray_set(T)(w_NDArray(T) * this, T value, ...) \
