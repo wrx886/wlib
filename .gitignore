@@ -1,4 +1,4 @@
 .vscode
 build
-CMakeCache.txt
+CMakeLists.txt
 main.c
