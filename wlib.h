@@ -573,7 +573,7 @@
      */                                                                \
     static inline void w_List_addFirst(T)(w_List(T) * this, T element) \
     {                                                                  \
-        w_List_add(T)(this, element, 0);                               \
+        w_List_add(T)(this, 0, element);                               \
     }
 
 // 列表插入元素到尾部
