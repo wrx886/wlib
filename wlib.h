@@ -642,6 +642,21 @@
         return w_List_remove(T)(this, this->size - 1);     \
     }
 
+// 列表获取数据指针
+#define w_List_data(T) w_concat(w_List(T), _data)
+#define w_List_data_define_(T)                                                        \
+    /**                                                                               \
+     * 列表获取数据指针                                                       \
+     * @param this 列表                                                             \
+     * @return T * 数据指针（慎用，如果扩容会导致该指针被释放） \
+     */                                                                               \
+    static inline T *w_List_data(T)(w_List(T) * this)                                 \
+    {                                                                                 \
+        w_assert(this != NULL);                                                       \
+        w_assert(this->elementData != NULL);                                          \
+        return this->elementData;                                                     \
+    }
+
 // 列表定义
 #define w_List_define(T)                \
     w_List_type_define_(T);             \
@@ -658,7 +673,8 @@
     w_List_addFirst_define_(T);         \
     w_List_addLast_define_(T);          \
     w_List_removeFirst_define_(T);      \
-    w_List_removeLast_define_(T);
+    w_List_removeLast_define_(T);       \
+    w_List_data_define_(T);
 
 // ========================================================================================================================================================
 //  Map
