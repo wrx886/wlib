@@ -1232,6 +1232,7 @@ typedef struct
 #define w_number_hash_define_(T)               \
     static inline int64_t w_hash(T)(T * value) \
     {                                          \
+        w_assert(value != NULL);               \
         return (int64_t)*value;                \
     }
 
@@ -1239,6 +1240,7 @@ typedef struct
 #define w_number_equals_define_(T)               \
     static inline bool w_equals(T)(T * a, T * b) \
     {                                            \
+        w_assert(a != NULL && b != NULL);        \
         return *a == *b;                         \
     }
 
@@ -1246,6 +1248,7 @@ typedef struct
 #define w_number_compare_define_(T)                  \
     static inline int64_t w_compare(T)(T * a, T * b) \
     {                                                \
+        w_assert(a != NULL && b != NULL);            \
         T sub = *a - *b;                             \
         if (sub < 0)                                 \
         {                                            \
