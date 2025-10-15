@@ -1299,4 +1299,111 @@ typedef struct
 // 指针类型定义
 #define w_Ptr_define(T) typedef T *w_Ptr(T)
 
+// ========================================================================================================================================================
+//  字符串构造器
+// ========================================================================================================================================================
+
+// StringBuilder 类型定义
+typedef char w_StringBuilder_ValueType_;
+w_List_define(w_StringBuilder_ValueType_);
+typedef struct
+{
+    w_List(w_StringBuilder_ValueType_) list;
+} w_StringBuilder;
+
+// StringBuilder 初始化
+static inline void w_StringBuilder_init(w_StringBuilder *this)
+{
+    w_assert(this != NULL);
+    w_List_init(w_StringBuilder_ValueType_)(&(this->list));
+}
+
+// StringBuilder 释放
+static inline void w_StringBuilder_deinit(w_StringBuilder *this)
+{
+    w_assert(this != NULL);
+    w_List_deinit(w_StringBuilder_ValueType_)(&(this->list));
+}
+
+// 获取大小
+static inline int64_t w_StringBuilder_size(w_StringBuilder *this)
+{
+    w_assert(this != NULL);
+    return w_List_size(w_StringBuilder_ValueType_)(&(this->list));
+}
+
+// 写入到 C 字符串
+static inline void w_StringBuilder_toChars(w_StringBuilder *this, char *buffer)
+{
+    w_assert(this != NULL);
+    w_assert(buffer != NULL);
+    int64_t size = w_List_size(w_StringBuilder_ValueType_)(&(this->list));
+    w_assert(size >= 0);
+    memcpy(buffer, w_List_data(w_StringBuilder_ValueType_)(&(this->list)), size);
+    buffer[size] = '\0';
+}
+
+// 将 char 追加到此序列
+static inline void w_StringBuilder_appendChar(w_StringBuilder *this, char value)
+{
+    w_assert(this != NULL);
+    w_List_addLast(w_StringBuilder_ValueType_)(&(this->list), value);
+}
+
+// 将 char 数组的子数组追加到此序列
+static inline void w_StringBuilder_appendSubChars(w_StringBuilder *this, char *value, int64_t offset, int64_t len)
+{
+    w_assert(this != NULL);
+    for (int64_t i = offset; i < offset + len; i++)
+    {
+        w_StringBuilder_appendChar(this, value[i]);
+    }
+}
+
+// 将 char 数组追加到此序列
+static inline void w_StringBuilder_appendChars(w_StringBuilder *this, char *value)
+{
+    w_assert(this != NULL);
+    w_StringBuilder_appendSubChars(this, value, 0, strlen(value));
+}
+
+// 将 bool 追加到序列中
+static inline void w_StringBuilder_appendBool(w_StringBuilder *this, bool value)
+{
+    w_assert(this != NULL);
+    w_StringBuilder_appendChars(this, value ? "true" : "false");
+}
+
+// 将 double 加到此序列
+static inline void w_StringBuilder_appendDouble(w_StringBuilder *this, double value)
+{
+    w_assert(this != NULL);
+    char buffer[32];
+    snprintf(buffer, sizeof(buffer), "%.15g", value);
+    w_StringBuilder_appendChars(this, buffer);
+}
+
+// 将 float 追加到此序列
+static inline void w_StringBuilder_appendFloat(w_StringBuilder *this, float value)
+{
+    w_assert(this != NULL);
+    w_StringBuilder_appendDouble(this, value);
+}
+
+// 将 long 追加到此序列
+static inline void w_StringBuilder_appendLong(w_StringBuilder *this, int64_t value)
+{
+    w_assert(this != NULL);
+    char buffer[32];
+    snprintf(buffer, sizeof(buffer), "%lld", value);
+    w_StringBuilder_appendChars(this, buffer);
+}
+
+// 将 int 追加到此序列
+static inline void w_StringBuilder_appendInt(w_StringBuilder *this, int value)
+{
+    w_assert(this != NULL);
+    w_StringBuilder_appendLong(this, value);
+}
+
 #endif
