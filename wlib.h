@@ -1310,99 +1310,381 @@ typedef struct
     w_List(w_StringBuilder_ValueType_) list;
 } w_StringBuilder;
 
-// StringBuilder 初始化
+/**
+ * StringBuilder 初始化
+ * @param this
+ * @return void
+ */
 static inline void w_StringBuilder_init(w_StringBuilder *this)
 {
     w_assert(this != NULL);
     w_List_init(w_StringBuilder_ValueType_)(&(this->list));
 }
 
-// StringBuilder 释放
+/**
+ * StringBuilder 释放
+ * @param this
+ * @return void
+ */
 static inline void w_StringBuilder_deinit(w_StringBuilder *this)
 {
     w_assert(this != NULL);
     w_List_deinit(w_StringBuilder_ValueType_)(&(this->list));
 }
 
-// 获取大小
+/**
+ * 获取大小
+ * @param this
+ * @return int64_t
+ */
 static inline int64_t w_StringBuilder_size(w_StringBuilder *this)
 {
     w_assert(this != NULL);
     return w_List_size(w_StringBuilder_ValueType_)(&(this->list));
 }
 
-// 写入到 C 字符串
+/**
+ * 获取容量
+ * @param this
+ * @return int64_t
+ */
+static inline int64_t w_StringBuilder_capacity(w_StringBuilder *this)
+{
+    w_assert(this != NULL);
+    return w_List_capacity(w_StringBuilder_ValueType_)(&(this->list));
+}
+
+/**
+ * 写入到 C 字符串
+ * @param this
+ * @param buffer 要被写入的缓冲区
+ * @return void
+ */
 static inline void w_StringBuilder_toChars(w_StringBuilder *this, char *buffer)
 {
     w_assert(this != NULL);
     w_assert(buffer != NULL);
-    int64_t size = w_List_size(w_StringBuilder_ValueType_)(&(this->list));
-    w_assert(size >= 0);
+    int64_t size = w_StringBuilder_size(this);
     memcpy(buffer, w_List_data(w_StringBuilder_ValueType_)(&(this->list)), size);
     buffer[size] = '\0';
 }
 
-// 将 char 追加到此序列
-static inline void w_StringBuilder_appendChar(w_StringBuilder *this, char value)
+/**
+ * 翻转序列
+ * @param this
+ * @return void
+ */
+static inline void w_StringBuilder_reverse(w_StringBuilder *this)
 {
     w_assert(this != NULL);
-    w_List_addLast(w_StringBuilder_ValueType_)(&(this->list), value);
-}
-
-// 将 char 数组的子数组追加到此序列
-static inline void w_StringBuilder_appendSubChars(w_StringBuilder *this, char *value, int64_t offset, int64_t len)
-{
-    w_assert(this != NULL);
-    for (int64_t i = offset; i < offset + len; i++)
+    int64_t i = 0, j = w_StringBuilder_size(this) - 1;
+    while (i < j)
     {
-        w_StringBuilder_appendChar(this, value[i]);
+        char temp = w_List_get(w_StringBuilder_ValueType_)(&(this->list), i);
+        w_List_set(w_StringBuilder_ValueType_)(&(this->list), i, w_List_get(w_StringBuilder_ValueType_)(&(this->list), j));
+        w_List_set(w_StringBuilder_ValueType_)(&(this->list), j, temp);
+        i++;
+        j--;
     }
 }
 
-// 将 char 数组追加到此序列
-static inline void w_StringBuilder_appendChars(w_StringBuilder *this, char *value)
+/**
+ * 获取某个索引的元素
+ * @param this
+ * @param index 索引
+ * @return char
+ */
+static inline char w_StringBuilder_charAt(w_StringBuilder *this, int64_t index)
 {
     w_assert(this != NULL);
-    w_StringBuilder_appendSubChars(this, value, 0, strlen(value));
+    return w_List_get(w_StringBuilder_ValueType_)(&(this->list), index);
 }
 
-// 将 bool 追加到序列中
-static inline void w_StringBuilder_appendBool(w_StringBuilder *this, bool value)
+/**
+ * 将 char 插入到此序列
+ * @param this
+ * @param index 索引
+ * @param value 要插入的字符
+ * @return void
+ */
+static inline void w_StringBuilder_insertChar(w_StringBuilder *this, int64_t index, char value)
 {
+    // 断言
     w_assert(this != NULL);
-    w_StringBuilder_appendChars(this, value ? "true" : "false");
+    // 插入
+    w_List_add(w_StringBuilder_ValueType_)(&(this->list), index, value);
 }
 
-// 将 double 加到此序列
-static inline void w_StringBuilder_appendDouble(w_StringBuilder *this, double value)
+/**
+ * 将 char[] 的子序列插入到此序列
+ * @param this
+ * @param index 索引
+ * @param str 要插入的字符串
+ * @param offset 子序列的起始索引
+ * @param len 子序列的长度
+ * @return void
+ */
+static inline void w_StringBuilder_insertSubChars(w_StringBuilder *this, int64_t index, const char *str, int64_t offset, int64_t len)
+{
+    // 断言
+    w_assert(this != NULL);
+    w_assert(str != NULL);
+    int64_t strSize = strlen(str);
+    w_assert(offset >= 0 && offset <= strSize);
+    w_assert(len >= 0 && offset + len <= strSize);
+
+    // 循环插入
+    for (int64_t i = 0; i < len; i++)
+    {
+        w_StringBuilder_insertChar(this, index + i, str[offset + i]);
+    }
+}
+
+/**
+ * 将 char[] 添加到此序列
+ * @param this
+ * @param str 要添加的字符串
+ * @return void
+ */
+static inline void w_StringBuilder_insertChars(w_StringBuilder *this, int64_t index, const char *str)
+{
+    w_StringBuilder_insertSubChars(this, index, str, 0, strlen(str));
+}
+
+/**
+ * 将 bool 插入到此序列
+ * @param this
+ * @param index 索引
+ * @param value 要插入的布尔值
+ * @return void
+ */
+static inline void w_StringBuilder_insertBool(w_StringBuilder *this, int64_t index, bool value)
+{
+    w_StringBuilder_insertChars(this, index, value ? "true" : "false");
+}
+
+/**
+ * 将 double 插入到此序列
+ * @param this
+ * @param index 索引
+ * @param value 要插入的 double 值
+ * @return void
+ */
+static inline void w_StringBuilder_insertDouble(w_StringBuilder *this, int64_t index, double value)
 {
     w_assert(this != NULL);
     char buffer[32];
     snprintf(buffer, sizeof(buffer), "%.15g", value);
-    w_StringBuilder_appendChars(this, buffer);
+    w_StringBuilder_insertChars(this, index, buffer);
 }
 
-// 将 float 追加到此序列
-static inline void w_StringBuilder_appendFloat(w_StringBuilder *this, float value)
+/**
+ * 将 float 插入到此序列
+ * @param this
+ * @param index 索引
+ * @param value 要插入的 float 值
+ * @return void
+ */
+static inline void w_StringBuilder_insertFloat(w_StringBuilder *this, int64_t index, float value)
 {
-    w_assert(this != NULL);
-    w_StringBuilder_appendDouble(this, value);
+    w_StringBuilder_insertDouble(this, index, value);
 }
 
-// 将 long 追加到此序列
-static inline void w_StringBuilder_appendLong(w_StringBuilder *this, int64_t value)
+/**
+ * 将 long long (int64_t) 插入到此序列
+ * @param this
+ * @param index 索引
+ * @param value 要插入的 long long (int64_t) 值
+ * @return void
+ */
+static inline void w_StringBuilder_insertLong(w_StringBuilder *this, int64_t index, int64_t value)
 {
     w_assert(this != NULL);
     char buffer[32];
-    snprintf(buffer, sizeof(buffer), "%lld", value);
-    w_StringBuilder_appendChars(this, buffer);
+    sprintf(buffer, "%lld", value);
+    w_StringBuilder_insertChars(this, index, buffer);
 }
 
-// 将 int 追加到此序列
+/**
+ * 将 int 插入到此序列
+ * @param this
+ * @param index 索引
+ * @param value 要插入的 int 值
+ * @return void
+ */
+static inline void w_StringBuilder_insertInt(w_StringBuilder *this, int64_t index, int value)
+{
+    w_StringBuilder_insertLong(this, index, value);
+}
+
+/**
+ * 将 char 追加到此序列
+ * @param this
+ * @param value 要追加的 char 值
+ * @return void
+ */
+static inline void w_StringBuilder_appendChar(w_StringBuilder *this, char value)
+{
+    w_StringBuilder_insertChar(this, w_StringBuilder_size(this), value);
+}
+
+/**
+ * 将 char[] 的子序列追加到此序列
+ * @param this
+ * @param value 要追加的字符串
+ * @param offset 子序列的起始索引
+ * @param len 子序列的长度
+ * @return void
+ */
+static inline void w_StringBuilder_appendSubChars(w_StringBuilder *this, char *value, int64_t offset, int64_t len)
+{
+    w_StringBuilder_insertSubChars(this, w_StringBuilder_size(this), value, offset, len);
+}
+
+/**
+ * 将 char[] 追加到此序列
+ * @param this
+ * @param value 要追加的字符串
+ * @return void
+ */
+static inline void w_StringBuilder_appendChars(w_StringBuilder *this, char *value)
+{
+    w_StringBuilder_insertChars(this, w_StringBuilder_size(this), value);
+}
+
+/**
+ * 将 bool 追加到序列中
+ * @param this
+ * @param value 要追加的布尔值
+ * @return void
+ */
+static inline void w_StringBuilder_appendBool(w_StringBuilder *this, bool value)
+{
+    w_StringBuilder_insertBool(this, w_StringBuilder_size(this), value);
+}
+
+/**
+ * 将 double 加到此序列
+ * @param this
+ * @param value 要追加的 double 值
+ * @return void
+ */
+static inline void w_StringBuilder_appendDouble(w_StringBuilder *this, double value)
+{
+    w_StringBuilder_insertDouble(this, w_StringBuilder_size(this), value);
+}
+
+/**
+ * 将 float 追加到此序列
+ * @param this
+ * @param value 要追加的 float 值
+ * @return void
+ */
+static inline void w_StringBuilder_appendFloat(w_StringBuilder *this, float value)
+{
+    w_StringBuilder_insertFloat(this, w_StringBuilder_size(this), value);
+}
+
+/**
+ * 将 long 追加到此序列
+ * @param this
+ * @param value 要追加的 long 值
+ * @return void
+ */
+static inline void w_StringBuilder_appendLong(w_StringBuilder *this, int64_t value)
+{
+    w_StringBuilder_insertLong(this, w_StringBuilder_size(this), value);
+}
+
+/**
+ * 将 int 追加到此序列
+ * @param this
+ * @param value 要追加的 int 值
+ * @return void
+ */
 static inline void w_StringBuilder_appendInt(w_StringBuilder *this, int value)
 {
+    w_StringBuilder_insertInt(this, w_StringBuilder_size(this), value);
+}
+
+/**
+ * 删除字符
+ * @param this
+ * @param index 要删除的字符的索引
+ * @return void
+ */
+static inline void w_StringBuilder_removeCharAt(w_StringBuilder *this, int64_t index)
+{
     w_assert(this != NULL);
-    w_StringBuilder_appendLong(this, value);
+    w_List_remove(w_StringBuilder_ValueType_)(&(this->list), index);
+}
+
+/**
+ * 删除序列
+ * @param this
+ * @param offset 要删除的子序列的起始索引
+ * @param len 要删除的子序列的长度
+ * @return void
+ */
+static inline void w_StringBuilder_remove(w_StringBuilder *this, int64_t offset, int64_t len)
+{
+    w_assert(this != NULL);
+    for (int64_t i = 0; i < len; i++)
+    {
+        w_StringBuilder_removeCharAt(this, offset);
+    }
+}
+
+/**
+ * 哈希函数
+ * @param this
+ * @return int64_t
+ */
+static inline int64_t w_hash(w_StringBuilder)(w_StringBuilder *this)
+{
+    w_assert(this != NULL);
+    int64_t hash = 0;
+    int64_t size = w_StringBuilder_size(this);
+    for (int64_t i = 0; i < size; i++)
+    {
+        hash = hash * 31 + w_List_get(w_StringBuilder_ValueType_)(&(this->list), i);
+    }
+    return hash;
+}
+
+/**
+ * 比较函数
+ * @param this
+ * @param other
+ * @return int64_t
+ */
+static inline int64_t w_compare(w_StringBuilder)(w_StringBuilder *this, w_StringBuilder *other)
+{
+    w_assert(this != NULL);
+    w_assert(other != NULL);
+    int64_t size = w_StringBuilder_size(this);
+    int64_t otherSize = w_List_size(w_StringBuilder_ValueType_)(&(other->list));
+    return strncmp(w_List_data(w_StringBuilder_ValueType_)(&(this->list)),
+                   w_List_data(w_StringBuilder_ValueType_)(&(other->list)),
+                   size < otherSize ? size : otherSize);
+}
+
+/**
+ * 比较函数
+ * @param this
+ * @param other
+ * @return bool
+ */
+static inline bool w_equals(w_StringBuilder)(w_StringBuilder *this, w_StringBuilder *other)
+{
+    w_assert(this != NULL);
+    w_assert(other != NULL);
+    if (w_StringBuilder_size(this) != w_StringBuilder_size(other))
+    {
+        // 长度不同
+        return false;
+    }
+    return w_compare(w_StringBuilder)(this, other) == 0;
 }
 
 #endif
