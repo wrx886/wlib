@@ -657,6 +657,21 @@
         return this->elementData;                                                     \
     }
 
+// 清空列表
+#define w_List_clear(T) w_concat(w_List(T), _clear)
+#define w_List_clear_define_(T)                          \
+    /**                                                  \
+     * 清空列表                                      \
+     * @param this 列表                                \
+     * @return void                                      \
+     */                                                  \
+    static inline void w_List_clear(T)(w_List(T) * this) \
+    {                                                    \
+        w_assert(this != NULL);                          \
+        w_assert(this->elementData != NULL);             \
+        this->size = 0; /*  列表大小设置为 0 即可 */     \
+    }
+
 // 列表定义
 #define w_List_define(T)                \
     w_List_type_define_(T);             \
