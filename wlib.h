@@ -1675,11 +1675,22 @@ static inline int64_t w_compare(w_StringBuilder)(w_StringBuilder *this, w_String
 {
     w_assert(this != NULL);
     w_assert(other != NULL);
-    int64_t size = w_StringBuilder_size(this);
-    int64_t otherSize = w_StringBuilder_size(other);
-    return strncmp(w_List_data(w_StringBuilder_ValueType_)(&(this->list)),
-                   w_List_data(w_StringBuilder_ValueType_)(&(other->list)),
-                   size < otherSize ? size : otherSize);
+    int64_t i = 0;
+    while (true)
+    {
+        int64_t c1 = i < w_StringBuilder_size(this) ? w_StringBuilder_charAt(this, i) : '\0';
+        int64_t c2 = i < w_StringBuilder_size(other) ? w_StringBuilder_charAt(other, i) : '\0';
+        if (c1 > c2)
+        {
+            return 1;
+        }
+        else if (c1 < c2)
+        {
+            return -1;
+        }
+        i++;
+    }
+    return 0;
 }
 
 /**
@@ -1709,17 +1720,52 @@ static inline bool w_equals(w_StringBuilder)(w_StringBuilder *this, w_StringBuil
  */
 static inline int64_t w_StringBuilder_indexOfWithFromIndex(w_StringBuilder *this, int64_t fromIndex, const char *value)
 {
-    // 参数检查
-    w_assert(this != NULL);
-    w_assert(value != NULL);
-    w_assert(fromIndex >= 0 && fromIndex < w_StringBuilder_size(this));
-    // 查找
-    char *data = w_malloc(w_StringBuilder_size(this) + 1);
-    w_StringBuilder_toChars(this, data);
-    const char *find = strstr(&(data[fromIndex]), value);
-    // 返回结果
-    int64_t ret = find == NULL ? -1 : find - data;
-    w_free(data);
+    // 字符串长度
+    int64_t thisLen = w_StringBuilder_size(this);
+    int64_t valueLen = strlen(value);
+    // 构建 next 数组
+    int64_t *next = w_malloc(sizeof(int64_t) * valueLen);
+    next[0] = -1;
+    int i = -1, j = 1;
+    while (j < valueLen - 1)
+    {
+        if (i == -1 || value[i] == value[j])
+        {
+            i++;
+            j++;
+            next[j] = i;
+        }
+        else
+        {
+            i = next[i];
+        }
+    }
+    // KMP 算法核心
+    i = fromIndex;
+    j = 0;
+    while (i < thisLen && j < valueLen)
+    {
+        if (j == -1 || w_StringBuilder_charAt(this, i) == value[j])
+        {
+            i++;
+            j++;
+        }
+        else
+        {
+            j = next[j];
+        }
+    }
+    // 返回
+    int64_t ret;
+    if (j >= valueLen)
+    {
+        ret = i - valueLen;
+    }
+    else
+    {
+        ret = -1;
+    }
+    w_free(next);
     return ret;
 }
 
@@ -1733,4 +1779,5 @@ static inline int64_t w_StringBuilder_indexOf(w_StringBuilder *this, const char 
 {
     return w_StringBuilder_indexOfWithFromIndex(this, 0, value);
 }
+
 #endif
