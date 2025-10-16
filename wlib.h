@@ -689,7 +689,8 @@
     w_List_addLast_define_(T);          \
     w_List_removeFirst_define_(T);      \
     w_List_removeLast_define_(T);       \
-    w_List_data_define_(T);
+    w_List_data_define_(T);             \
+    w_List_clear_define_(T)
 
 // ========================================================================================================================================================
 //  Map
