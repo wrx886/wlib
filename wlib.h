@@ -1718,43 +1718,6 @@ static inline int64_t w_StringBuilder_indexOfWithFromIndex(w_StringBuilder *this
  */
 static inline int64_t w_StringBuilder_indexOf(w_StringBuilder *this, const char *value)
 {
-    return indexOfWithFromIndex(this, 0, value);
+    return w_StringBuilder_indexOfWithFromIndex(this, 0, value);
 }
-
-/**
- * 逆向查找子串
- * @param this
- * @param value 要查找的子串
- * @return int64_t 起始索引，未找到返回 -1
- */
-static inline int64_t w_StringBuilder_lastIndexOfWithFromIndex(w_StringBuilder *this, int64_t fromIndex, const char *value)
-{
-    // 参数检查
-    w_assert(this != NULL);
-    int64_t fromIndex = 0;
-    int64_t ret = -1;
-    while (fromIndex < w_StringBuilder_size(this))
-    {
-        int64_t index = w_StringBuilder_indexOfWithFromIndex(this, fromIndex, value);
-        if (index == -1)
-        {
-            break;
-        }
-        ret = index;
-        fromIndex = index + 1;
-    }
-    return ret;
-}
-
-/**
- * 逆向查找子串
- * @param this
- * @param value 要查找的子串
- * @return int64_t 起始索引，未找到返回 -1
- */
-static inline int64_t w_StringBuilder_lastIndexOf(w_StringBuilder *this, const char *value)
-{
-    return w_StringBuilder_lastIndexOfWithFromIndex(this, 0, value);
-}
-
 #endif
