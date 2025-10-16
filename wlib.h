@@ -1796,4 +1796,15 @@ static inline int64_t w_StringBuilder_indexOf(w_StringBuilder *this, const char 
     return w_StringBuilder_indexOfWithFromIndex(this, 0, value);
 }
 
+/**
+ * 清空序列
+ * @param this
+ * @return void
+ */
+static inline void w_StringBuilder_clear(w_StringBuilder *this)
+{
+    w_assert(this != NULL);
+    w_List_clear(w_StringBuilder_ValueType_)(&(this->list));
+}
+
 #endif
