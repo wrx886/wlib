@@ -1647,7 +1647,7 @@ static inline int64_t w_hash(w_StringBuilder)(w_StringBuilder *this)
     int64_t size = w_StringBuilder_size(this);
     for (int64_t i = 0; i < size; i++)
     {
-        hash = hash * 31 + w_List_get(w_StringBuilder_ValueType_)(&(this->list), i);
+        hash = hash * 31 + w_StringBuilder_charAt(this, i);
     }
     return hash;
 }
@@ -1663,7 +1663,7 @@ static inline int64_t w_compare(w_StringBuilder)(w_StringBuilder *this, w_String
     w_assert(this != NULL);
     w_assert(other != NULL);
     int64_t size = w_StringBuilder_size(this);
-    int64_t otherSize = w_List_size(w_StringBuilder_ValueType_)(&(other->list));
+    int64_t otherSize = w_StringBuilder_size(other);
     return strncmp(w_List_data(w_StringBuilder_ValueType_)(&(this->list)),
                    w_List_data(w_StringBuilder_ValueType_)(&(other->list)),
                    size < otherSize ? size : otherSize);
@@ -1685,6 +1685,76 @@ static inline bool w_equals(w_StringBuilder)(w_StringBuilder *this, w_StringBuil
         return false;
     }
     return w_compare(w_StringBuilder)(this, other) == 0;
+}
+
+/**
+ * 查找子串
+ * @param this
+ * @param fromIndex 起始索引
+ * @param value 要查找的字符串
+ * @return int64_t 起始索引，未找到返回 -1
+ */
+static inline int64_t w_StringBuilder_indexOfWithFromIndex(w_StringBuilder *this, int64_t fromIndex, const char *value)
+{
+    // 参数检查
+    w_assert(this != NULL);
+    w_assert(value != NULL);
+    w_assert(fromIndex >= 0 && fromIndex < w_StringBuilder_size(this));
+    // 查找
+    char *data = w_malloc(w_StringBuilder_size(this) + 1);
+    w_StringBuilder_toChars(this, data);
+    const char *find = strstr(&(data[fromIndex]), value);
+    // 返回结果
+    int64_t ret = find == NULL ? -1 : find - data;
+    w_free(data);
+    return ret;
+}
+
+/**
+ * 查找子串
+ * @param this
+ * @param value 要查找的子串
+ * @return int64_t 起始索引，未找到返回 -1
+ */
+static inline int64_t w_StringBuilder_indexOf(w_StringBuilder *this, const char *value)
+{
+    return indexOfWithFromIndex(this, 0, value);
+}
+
+/**
+ * 逆向查找子串
+ * @param this
+ * @param value 要查找的子串
+ * @return int64_t 起始索引，未找到返回 -1
+ */
+static inline int64_t w_StringBuilder_lastIndexOfWithFromIndex(w_StringBuilder *this, int64_t fromIndex, const char *value)
+{
+    // 参数检查
+    w_assert(this != NULL);
+    int64_t fromIndex = 0;
+    int64_t ret = -1;
+    while (fromIndex < w_StringBuilder_size(this))
+    {
+        int64_t index = w_StringBuilder_indexOfWithFromIndex(this, fromIndex, value);
+        if (index == -1)
+        {
+            break;
+        }
+        ret = index;
+        fromIndex = index + 1;
+    }
+    return ret;
+}
+
+/**
+ * 逆向查找子串
+ * @param this
+ * @param value 要查找的子串
+ * @return int64_t 起始索引，未找到返回 -1
+ */
+static inline int64_t w_StringBuilder_lastIndexOf(w_StringBuilder *this, const char *value)
+{
+    return w_StringBuilder_lastIndexOfWithFromIndex(this, 0, value);
 }
 
 #endif
