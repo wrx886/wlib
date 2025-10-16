@@ -1401,6 +1401,19 @@ static inline char w_StringBuilder_charAt(w_StringBuilder *this, int64_t index)
 }
 
 /**
+ * 设置某个索引的元素
+ * @param this
+ * @param index 索引
+ * @param value 要设置的字符
+ * @return void
+ */
+static inline void w_StringBuilder_setCharAt(w_StringBuilder *this, int64_t index, char value)
+{
+    w_assert(this != NULL);
+    w_List_set(w_StringBuilder_ValueType_)(&(this->list), index, value);
+}
+
+/**
  * 将 char 插入到此序列
  * @param this
  * @param index 索引
