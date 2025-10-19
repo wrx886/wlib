@@ -1807,4 +1807,129 @@ static inline void w_StringBuilder_clear(w_StringBuilder *this)
     w_List_clear(w_StringBuilder_ValueType_)(&(this->list));
 }
 
+// ========================================================================================================================================================
+//  大整型
+// ========================================================================================================================================================
+
+// 大整型定义
+typedef uint8_t w_BigInt_BitType_;
+w_List_define(w_BigInt_BitType_);
+typedef struct
+{
+    w_List(w_BigInt_BitType_) nums;
+    bool negative; // 是否为负数
+} w_BigInt;
+
+// 大整型初始化
+static inline void w_BigInt_init(w_BigInt *this, char *number)
+{
+    w_assert(this != NULL);
+    w_List_init(w_BigInt_BitType_)(&(this->nums));
+    // 符号位
+    this->negative = number[0] == '-';
+    // 使用 StringBuilder 存储数字
+    w_StringBuilder numberBuilder;
+    w_StringBuilder_init(&numberBuilder);
+    w_StringBuilder_appendSubChars(&numberBuilder,
+                                   number,
+                                   number[0] == '-' || number[0] == '+' ? 1 : 0,
+                                   number[0] == '-' || number[0] == '+' ? strlen(number) - 1 : strlen(number));
+    // 使用模二除法转为二进制
+    int64_t bitIndex = 0;
+    while (w_StringBuilder_size(&numberBuilder) > 0)
+    {
+        // 去除多余的 0
+        while (w_StringBuilder_size(&numberBuilder) > 0 &&
+               w_StringBuilder_charAt(&numberBuilder, 0) == '0')
+        {
+            w_StringBuilder_removeCharAt(&numberBuilder, 0);
+        }
+
+        // 余数
+        int64_t remainder = 0;
+
+        // 除以二运算
+        for (int64_t i = 0; i < w_StringBuilder_size(&numberBuilder); i++)
+        {
+            int64_t digit = w_StringBuilder_charAt(&numberBuilder, i) - '0';
+            w_assert(digit >= 0 && digit <= 9);
+            int64_t temp = remainder * 10 + digit;
+            w_StringBuilder_setCharAt(&numberBuilder, i, temp / 2 + '0');
+            remainder = temp % 2;
+        }
+
+        // 写入余数到数组
+        if (bitIndex % 8 == 0)
+        {
+            w_List_addLast(w_BigInt_BitType_)(&(this->nums), 0);
+        }
+        w_List_set(w_BigInt_BitType_)(&(this->nums),
+                                      bitIndex / 8,
+                                      w_List_get(w_BigInt_BitType_)(&(this->nums), bitIndex / 8) | (remainder << (bitIndex % 8)));
+        bitIndex++;
+    }
+
+    // 释放
+    w_StringBuilder_deinit(&numberBuilder);
+}
+
+// 大整型析构
+static inline void w_BigInt_deinit(w_BigInt *this)
+{
+    w_assert(this != NULL);
+    w_List_deinit(w_BigInt_BitType_)(&(this->nums));
+}
+
+// 转为字符串构造器
+static inline void w_BigInt_toStringBuilder(w_BigInt *this, w_StringBuilder *builder)
+{
+    w_assert(this != NULL);
+    w_assert(builder != NULL);
+    // 清空 builder
+    w_StringBuilder_clear(builder);
+    w_StringBuilder_appendChar(builder, '0');
+    // 乘二加下一位
+    for (int64_t i = w_List_size(w_BigInt_BitType_)(&(this->nums)) - 1; i >= 0; i--)
+    {
+        w_BigInt_BitType_ num = w_List_get(w_BigInt_BitType_)(&(this->nums), i);
+        for (int64_t j = 7; j >= 0; j--)
+        {
+            // 进位
+            int64_t carry = 0;
+            // 乘二
+            for (int64_t k = w_StringBuilder_size(builder) - 1; k >= 0; k--)
+            {
+                carry = (w_StringBuilder_charAt(builder, k) - '0') * 2 + carry;
+                w_StringBuilder_setCharAt(builder, k, carry % 10 + '0');
+                carry = carry / 10;
+            }
+            if (carry > 0)
+            {
+                w_StringBuilder_insertChar(builder, 0, carry + '0');
+            }
+            // 取位
+            int64_t digit = (num >> j) & 1;
+            // 加上这个位
+            carry = w_StringBuilder_charAt(builder, w_StringBuilder_size(builder) - 1) - '0' + digit;
+            w_StringBuilder_setCharAt(builder, w_StringBuilder_size(builder) - 1, carry % 10 + '0');
+            carry = carry / 10;
+            for (int64_t k = w_StringBuilder_size(builder) - 2; k >= 0; k--)
+            {
+                carry = (w_StringBuilder_charAt(builder, k) - '0') + carry;
+                w_StringBuilder_setCharAt(builder, k, carry % 10 + '0');
+                carry = carry / 10;
+            }
+            if (carry > 0)
+            {
+                w_StringBuilder_insertChar(builder, 0, carry + '0');
+            }
+        }
+    }
+    // 符号位
+    if (this->negative)
+    {
+        w_StringBuilder_insertChar(builder, 0, '-');
+    }
+}
+
 #endif
