@@ -2005,12 +2005,11 @@ static inline int64_t w_hash(w_BigInt)(w_BigInt *this)
     return hash;
 }
 
-// 同符号加法
+// 同符号加法，需要手动确保 this 和 other 符号位相同
 static inline void w_BigInt_addSameSign_(w_BigInt *this, w_BigInt *other, w_BigInt *result)
 {
     w_assert(this != NULL && other != NULL && result != NULL);
     w_assert(this != result && other != result);
-    w_assert(this->signum == other->signum);
     // 清空 result
     w_List_clear(w_BigInt_BitType_)(&(result->nums));
     // 符号位
@@ -2036,12 +2035,11 @@ static inline void w_BigInt_addSameSign_(w_BigInt *this, w_BigInt *other, w_BigI
     }
 }
 
-// 同符号减法
+// 同符号减法，需要手动确保 this 和 other 符号位相同
 static inline void w_BigInt_subSameSign_(w_BigInt *this, w_BigInt *other, w_BigInt *result)
 {
     w_assert(this != NULL && other != NULL && result != NULL);
     w_assert(this != result && other != result);
-    w_assert(this->signum == other->signum);
     // 清空 result
     w_List_clear(w_BigInt_BitType_)(&(result->nums));
     // 判断数字大小并处理符号位
@@ -2089,6 +2087,42 @@ static inline void w_BigInt_subSameSign_(w_BigInt *this, w_BigInt *other, w_BigI
     if (w_List_size(w_BigInt_BitType_)(&(result->nums)) == 0)
     {
         result->signum = 0;
+    }
+}
+
+// 加法
+static inline void w_BigInt_add(w_BigInt *this, w_BigInt *other, w_BigInt *result)
+{
+    w_assert(this != NULL && other != NULL && result != NULL);
+    w_assert(this != result && other != result);
+    // 符号位不同
+    if (this->signum != other->signum)
+    {
+        // 减法，即对 other 取反后 进行加法
+        w_BigInt_subSameSign_(this, other, result);
+    }
+    else
+    {
+        // 加法，即直接进行加法
+        w_BigInt_addSameSign_(this, other, result);
+    }
+}
+
+// 减法
+static inline void w_BigInt_sub(w_BigInt *this, w_BigInt *other, w_BigInt *result)
+{
+    w_assert(this != NULL && other != NULL && result != NULL);
+    w_assert(this != result && other != result);
+    // 符号位不同
+    if (this->signum != other->signum)
+    {
+        // 加法，即对 other 取反后 进行加法
+        w_BigInt_addSameSign_(this, other, result);
+    }
+    else
+    {
+        // 减法，即直接进行减法
+        w_BigInt_subSameSign_(this, other, result);
     }
 }
 
