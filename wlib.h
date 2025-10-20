@@ -1944,4 +1944,65 @@ static inline void w_BigInt_toStringBuilder(w_BigInt *this, w_StringBuilder *bui
     }
 }
 
+// 比较函数
+static inline int64_t w_compare(w_BigInt)(w_BigInt *this, w_BigInt *other)
+{
+    w_assert(this != NULL && other != NULL);
+    // 符号位不同
+    if (this->signum > other->signum)
+    {
+        return 1;
+    }
+    else if (this->signum < other->signum)
+    {
+        return -1;
+    }
+    else if (this->signum == 0 && other->signum == 0)
+    {
+        // 0
+        return 0;
+    }
+    // 符号位相同
+    int64_t thisSize = w_List_size(w_BigInt_BitType_)(&(this->nums));
+    int64_t otherSize = w_List_size(w_BigInt_BitType_)(&(other->nums));
+    int64_t maxSize = thisSize > otherSize ? thisSize : otherSize;
+    for (int64_t i = maxSize - 1; i >= 0; i--)
+    {
+        // 按位比较
+        int8_t thisDigit = i < thisSize ? w_List_get(w_BigInt_BitType_)(&(this->nums), i) : 0;
+        int8_t otherDigit = i < otherSize ? w_List_get(w_BigInt_BitType_)(&(other->nums), i) : 0;
+        if (thisDigit > otherDigit)
+        {
+            return 1;
+        }
+        else if (thisDigit < otherDigit)
+        {
+            return -1;
+        }
+    }
+    // 相同
+    return 0;
+}
+
+// 比较函数
+static inline bool w_equals(w_BigInt)(w_BigInt *this, w_BigInt *other)
+{
+    return w_compare(w_BigInt)(this, other) == 0;
+}
+
+// 哈希函数
+static inline int64_t w_hash(w_BigInt)(w_BigInt *this)
+{
+    w_assert(this != NULL);
+    // 符号位
+    int64_t hash = this->signum;
+    // 数字位
+    for (int64_t i = w_List_size(w_BigInt_BitType_)(&(this->nums)) - 1; i >= 0; i--)
+    {
+        hash += w_List_get(w_BigInt_BitType_)(&(this->nums), i);
+    }
+    // 返回
+    return hash;
+}
+
 #endif
