@@ -2005,4 +2005,91 @@ static inline int64_t w_hash(w_BigInt)(w_BigInt *this)
     return hash;
 }
 
+// 同符号加法
+static inline void w_BigInt_addSameSign_(w_BigInt *this, w_BigInt *other, w_BigInt *result)
+{
+    w_assert(this != NULL && other != NULL && result != NULL);
+    w_assert(this != result && other != result);
+    w_assert(this->signum == other->signum);
+    // 清空 result
+    w_List_clear(w_BigInt_BitType_)(&(result->nums));
+    // 符号位
+    result->signum = this->signum;
+    // 计算数字位的和
+    int64_t thisSize = w_List_size(w_BigInt_BitType_)(&(this->nums));
+    int64_t otherSize = w_List_size(w_BigInt_BitType_)(&(other->nums));
+    int64_t maxSize = thisSize > otherSize ? thisSize : otherSize;
+    int64_t carry = 0; // 进位
+    for (int64_t i = 0; i < maxSize; i++)
+    {
+        // 取出数字
+        int64_t thisDigit = i < thisSize ? w_List_get(w_BigInt_BitType_)(&(this->nums), i) : 0;
+        int64_t otherDigit = i < otherSize ? w_List_get(w_BigInt_BitType_)(&(other->nums), i) : 0;
+        // 计算和
+        int64_t sum = thisDigit + otherDigit + carry;
+        w_List_addLast(w_BigInt_BitType_)(&(result->nums), sum % 256);
+        carry = sum / 256;
+    }
+    if (carry > 0)
+    {
+        w_List_addLast(w_BigInt_BitType_)(&(result->nums), carry);
+    }
+}
+
+// 同符号减法
+static inline void w_BigInt_subSameSign_(w_BigInt *this, w_BigInt *other, w_BigInt *result)
+{
+    w_assert(this != NULL && other != NULL && result != NULL);
+    w_assert(this != result && other != result);
+    w_assert(this->signum == other->signum);
+    // 清空 result
+    w_List_clear(w_BigInt_BitType_)(&(result->nums));
+    // 判断数字大小并处理符号位
+    result->signum = this->signum;
+    if (w_compare(w_BigInt)(this, other) < 0)
+    {
+        result->signum = -result->signum; // 符号位取反
+        // 交换，使得 this >= other
+        w_BigInt *temp = this;
+        this = other;
+        other = temp;
+    }
+    // 数字位减法
+    int64_t thisSize = w_List_size(w_BigInt_BitType_)(&(this->nums));
+    int64_t otherSize = w_List_size(w_BigInt_BitType_)(&(other->nums));
+    int64_t maxSize = thisSize > otherSize ? thisSize : otherSize;
+    int64_t borrow = 0; // 借位
+    for (int64_t i = 0; i < maxSize; i++)
+    {
+        // 获取数字
+        int64_t thisDigit = i < thisSize ? w_List_get(w_BigInt_BitType_)(&(this->nums), i) : 0;
+        int64_t otherDigit = i < otherSize ? w_List_get(w_BigInt_BitType_)(&(other->nums), i) : 0;
+
+        // 减法
+        int64_t diff = thisDigit - otherDigit - borrow;
+        if (diff < 0)
+        {
+            diff += 256;
+            borrow = 1;
+        }
+        else
+        {
+            borrow = 0;
+        }
+
+        w_List_addLast(w_BigInt_BitType_)(&(result->nums), diff);
+    }
+    // 清空多余的 0
+    while (w_List_size(w_BigInt_BitType_)(&(result->nums)) > 0 &&
+           w_List_get(w_BigInt_BitType_)(&(result->nums), w_List_size(w_BigInt_BitType_)(&(result->nums)) - 1) == 0)
+    {
+        w_List_removeLast(w_BigInt_BitType_)(&(result->nums));
+    }
+    // 是否为 0
+    if (w_List_size(w_BigInt_BitType_)(&(result->nums)) == 0)
+    {
+        result->signum = 0;
+    }
+}
+
 #endif
