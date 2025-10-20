@@ -1817,7 +1817,7 @@ w_List_define(w_BigInt_BitType_);
 typedef struct
 {
     w_List(w_BigInt_BitType_) nums;
-    bool negative; // 是否为负数
+    int8_t signum; // 符号位：-1 0 +1
 } w_BigInt;
 
 // 大整型初始化
@@ -1825,8 +1825,6 @@ static inline void w_BigInt_init(w_BigInt *this, char *number)
 {
     w_assert(this != NULL);
     w_List_init(w_BigInt_BitType_)(&(this->nums));
-    // 符号位
-    this->negative = number[0] == '-';
     // 使用 StringBuilder 存储数字
     w_StringBuilder numberBuilder;
     w_StringBuilder_init(&numberBuilder);
@@ -1869,6 +1867,15 @@ static inline void w_BigInt_init(w_BigInt *this, char *number)
         bitIndex++;
     }
 
+    // 符号位
+    this->signum = number[0] == '-' ? -1 : 1;
+    // 表示 0 时候，nums 为空且 signum 为 0
+    if ((w_List_get(w_BigInt_BitType_)(&(this->nums), 0) == 0 && w_List_size(w_BigInt_BitType_)(&(this->nums)) == 1) || w_List_size(w_BigInt_BitType_)(&(this->nums)) == 0)
+    {
+        this->signum = 0;
+        w_List_clear(w_BigInt_BitType_)(&(this->nums));
+    }
+
     // 释放
     w_StringBuilder_deinit(&numberBuilder);
 }
@@ -1888,6 +1895,11 @@ static inline void w_BigInt_toStringBuilder(w_BigInt *this, w_StringBuilder *bui
     // 清空 builder
     w_StringBuilder_clear(builder);
     w_StringBuilder_appendChar(builder, '0');
+    // 0
+    if (this->signum == 0)
+    {
+        return;
+    }
     // 乘二加下一位
     for (int64_t i = w_List_size(w_BigInt_BitType_)(&(this->nums)) - 1; i >= 0; i--)
     {
@@ -1926,7 +1938,7 @@ static inline void w_BigInt_toStringBuilder(w_BigInt *this, w_StringBuilder *bui
         }
     }
     // 符号位
-    if (this->negative)
+    if (this->signum < 0)
     {
         w_StringBuilder_insertChar(builder, 0, '-');
     }
