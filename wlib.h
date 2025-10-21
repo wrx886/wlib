@@ -2126,4 +2126,60 @@ static inline void w_BigInt_sub(w_BigInt *this, w_BigInt *other, w_BigInt *resul
     }
 }
 
+// 乘法
+static inline void w_BigInt_mul(w_BigInt *this, w_BigInt *other, w_BigInt *result)
+{
+    w_assert(this != NULL && other != NULL && result != NULL);
+    w_assert(this != result && other != result);
+    // 清空 result
+    w_List_clear(w_BigInt_BitType_)(&(result->nums));
+    // 符号位
+    result->signum = this->signum * other->signum;
+    // 0
+    if (result->signum == 0)
+    {
+        return;
+    }
+    // 数字位乘法
+    w_BigInt mulTemp, resultTemp, zero;
+    w_BigInt_init(&mulTemp, "0");
+    w_BigInt_init(&resultTemp, "0");
+    w_BigInt_init(&zero, "0");
+    // 从高位往低位乘
+    for (int64_t i = w_List_size(w_BigInt_BitType_)(&(this->nums)) - 1; i >= 0; i--)
+    {
+        // 清零
+        mulTemp.signum = 1; // 符号位为正
+        w_List_clear(w_BigInt_BitType_)(&(mulTemp.nums));
+        // 进位
+        int64_t carry = 0;
+        // 从低位往高位乘
+        for (int64_t j = 0; j < w_List_size(w_BigInt_BitType_)(&(other->nums)); j++)
+        {
+            // 获取数字
+            int64_t thisDigit = w_List_get(w_BigInt_BitType_)(&(this->nums), i);
+            int64_t otherDigit = w_List_get(w_BigInt_BitType_)(&(other->nums), j);
+            // 乘法
+            int64_t product = thisDigit * otherDigit + carry;
+            w_List_addLast(w_BigInt_BitType_)(&(mulTemp.nums), product % 256);
+            carry = product / 256;
+        }
+        if (carry > 0)
+        {
+            w_List_addLast(w_BigInt_BitType_)(&(mulTemp.nums), carry);
+        }
+        // result 乘以 256
+        w_List_addFirst(w_BigInt_BitType_)(&(result->nums), 0);
+        // result 加上 temp
+        w_BigInt_add(result, &mulTemp, &resultTemp);
+        w_BigInt_add(&resultTemp, &zero, result); // 赋值给 result
+    }
+    // 释放临时变量
+    w_BigInt_deinit(&mulTemp);
+    w_BigInt_deinit(&resultTemp);
+    w_BigInt_deinit(&zero);
+    // 符号位设置
+    result->signum = this->signum * other->signum;
+}
+
 #endif
