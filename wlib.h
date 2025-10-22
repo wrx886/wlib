@@ -2011,6 +2011,21 @@ static inline int64_t w_hash(w_BigInt)(w_BigInt *this)
     return hash;
 }
 
+// 复制函数
+static inline void w_BigInt_copyTo(w_BigInt *this, w_BigInt *result)
+{
+    w_assert(this != NULL && result != NULL);
+    w_assert(this != result);
+    // 符号位
+    result->signum = this->signum;
+    // 数字位
+    w_List_clear(w_BigInt_BitType_)(&(result->nums));
+    for (int64_t i = 0; i < w_List_size(w_BigInt_BitType_)(&(this->nums)); i++)
+    {
+        w_List_addLast(w_BigInt_BitType_)(&(result->nums), w_List_get(w_BigInt_BitType_)(&(this->nums), i));
+    }
+}
+
 // 同符号加法，需要手动确保 this 和 other 符号位相同
 static inline void w_BigInt_addSameSign_(w_BigInt *this, w_BigInt *other, w_BigInt *result)
 {
