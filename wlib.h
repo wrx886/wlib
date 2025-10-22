@@ -2248,7 +2248,11 @@ static inline void w_BigInt_div(w_BigInt *this, w_BigInt *other, w_BigInt *resul
     w_BigInt_deinit(&temp);
     w_BigInt_deinit(&tmp);
     // 符号位
-    result->signum = this->signum * other->signum;
+    if (result->signum != 0)
+    {
+        // 商不为 0 时设置符号
+        result->signum = this->signum * other->signum;
+    }
 }
 
 // 取模
