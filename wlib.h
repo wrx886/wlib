@@ -1867,10 +1867,16 @@ static inline void w_BigInt_init(w_BigInt *this, char *number)
         bitIndex++;
     }
 
+    // 去除多余的 0
+    while (w_List_size(w_BigInt_BitType_)(&(this->nums)) > 0 && w_List_get(w_BigInt_BitType_)(&(this->nums), w_List_size(w_BigInt_BitType_)(&(this->nums)) - 1) == 0)
+    {
+        w_List_removeLast(w_BigInt_BitType_)(&(this->nums));
+    }
+
     // 符号位
     this->signum = number[0] == '-' ? -1 : 1;
     // 表示 0 时候，nums 为空且 signum 为 0
-    if ((w_List_get(w_BigInt_BitType_)(&(this->nums), 0) == 0 && w_List_size(w_BigInt_BitType_)(&(this->nums)) == 1) || w_List_size(w_BigInt_BitType_)(&(this->nums)) == 0)
+    if ((w_List_size(w_BigInt_BitType_)(&(this->nums)) == 1 && w_List_get(w_BigInt_BitType_)(&(this->nums), 0) == 0) || w_List_size(w_BigInt_BitType_)(&(this->nums)) == 0)
     {
         this->signum = 0;
         w_List_clear(w_BigInt_BitType_)(&(this->nums));
@@ -1969,8 +1975,8 @@ static inline int64_t w_compare(w_BigInt)(w_BigInt *this, w_BigInt *other)
     for (int64_t i = maxSize - 1; i >= 0; i--)
     {
         // 按位比较
-        int8_t thisDigit = i < thisSize ? w_List_get(w_BigInt_BitType_)(&(this->nums), i) : 0;
-        int8_t otherDigit = i < otherSize ? w_List_get(w_BigInt_BitType_)(&(other->nums), i) : 0;
+        w_BigInt_BitType_ thisDigit = i < thisSize ? w_List_get(w_BigInt_BitType_)(&(this->nums), i) : 0;
+        w_BigInt_BitType_ otherDigit = i < otherSize ? w_List_get(w_BigInt_BitType_)(&(other->nums), i) : 0;
         if (thisDigit > otherDigit)
         {
             return 1;
@@ -2274,6 +2280,58 @@ static inline void w_BigInt_mod(w_BigInt *this, w_BigInt *other, w_BigInt *resul
 
     w_BigInt_deinit(&quotient);
     w_BigInt_deinit(&temp);
+}
+
+// 快速幂
+static inline void w_BigInt_pow(w_BigInt *this, w_BigInt *other, w_BigInt *result)
+{
+    w_assert(this != NULL && other != NULL && result != NULL);
+    w_assert(this != result && other != result);
+    w_assert(this->signum != 0);  // 底数不能为 0
+    w_assert(other->signum >= 0); // 幂数不能小于 0
+
+    // 初始化临时变量
+    w_BigInt ZERO, ONE, TWO, temp, thisTemp, otherTemp;
+    w_BigInt_init(&ZERO, "0");
+    w_BigInt_init(&ONE, "1");
+    w_BigInt_init(&TWO, "2");
+    w_BigInt_init(&temp, "0");
+    w_BigInt_init(&thisTemp, "0");
+    w_BigInt_init(&otherTemp, "0");
+
+    // 初始化 result 为 1
+    w_BigInt_add(&ONE, &ZERO, result);
+
+    // 初始化 thisTemp
+    w_BigInt_add(this, &ZERO, &thisTemp);
+
+    // 初始化 otherTemp
+    w_BigInt_add(other, &ZERO, &otherTemp);
+
+    // 开始循环
+    while (otherTemp.signum > 0)
+    {
+        if (otherTemp.signum > 0 && (w_List_get(w_BigInt_BitType_)(&(otherTemp.nums), 0) & 1) != 0)
+        {
+            // 奇数处理方案 result = result * this
+            w_BigInt_mul(result, &thisTemp, &temp);
+            w_BigInt_add(&temp, &ZERO, result);
+        }
+        // 偶数处理方案 this = this * this
+        w_BigInt_mul(&thisTemp, &thisTemp, &temp);
+        w_BigInt_add(&temp, &ZERO, &thisTemp);
+        // 幂数右移一位
+        w_BigInt_div(&otherTemp, &TWO, &temp);
+        w_BigInt_add(&temp, &ZERO, &otherTemp);
+    }
+
+    // 释放
+    w_BigInt_deinit(&ZERO);
+    w_BigInt_deinit(&ONE);
+    w_BigInt_deinit(&TWO);
+    w_BigInt_deinit(&temp);
+    w_BigInt_deinit(&thisTemp);
+    w_BigInt_deinit(&otherTemp);
 }
 
 #endif
