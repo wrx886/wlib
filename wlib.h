@@ -2026,6 +2026,71 @@ static inline void w_BigInt_copyTo(w_BigInt *this, w_BigInt *result)
     }
 }
 
+// 常量 0
+static inline w_BigInt *w_BigInt_ZERO()
+{
+    static w_BigInt ZERO;
+    static bool init = false;
+    if (!init)
+    {
+        w_BigInt_init(&ZERO, "0");
+        init = true;
+    }
+    return &ZERO;
+}
+
+// 常量 1
+static inline w_BigInt *w_BigInt_ONE()
+{
+    static w_BigInt ONE;
+    static bool init = false;
+    if (!init)
+    {
+        w_BigInt_init(&ONE, "1");
+        init = true;
+    }
+    return &ONE;
+}
+
+// 常量 2
+static inline w_BigInt *w_BigInt_TWO()
+{
+    static w_BigInt TWO;
+    static bool init = false;
+    if (!init)
+    {
+        w_BigInt_init(&TWO, "2");
+        init = true;
+    }
+    return &TWO;
+}
+
+// 常量 -1
+static inline w_BigInt *w_BigInt_NEGATIVE_ONE()
+{
+    static w_BigInt NEGATIVE_ONE;
+    static bool init = false;
+    if (!init)
+    {
+        w_BigInt_init(&NEGATIVE_ONE, "-1");
+        init = true;
+    }
+    return &NEGATIVE_ONE;
+}
+
+// 常量 10
+static inline w_BigInt *w_BigInt_TEN()
+{
+    static w_BigInt TEN;
+    static bool init = false;
+    if (!init)
+    {
+        w_BigInt_init(&TEN, "10");
+        init = true;
+    }
+    return &TEN;
+}
+
 // 同符号加法，需要手动确保 this 和 other 符号位相同
 static inline void w_BigInt_addSameSign_(w_BigInt *this, w_BigInt *other, w_BigInt *result)
 {
