@@ -2162,10 +2162,9 @@ static inline void w_BigInt_mul(w_BigInt *this, w_BigInt *other, w_BigInt *resul
         return;
     }
     // 数字位乘法
-    w_BigInt mulTemp, resultTemp, zero;
+    w_BigInt mulTemp, resultTemp;
     w_BigInt_init(&mulTemp, "0");
     w_BigInt_init(&resultTemp, "0");
-    w_BigInt_init(&zero, "0");
     // 从高位往低位乘
     for (int64_t i = w_List_size(w_BigInt_BitType_)(&(this->nums)) - 1; i >= 0; i--)
     {
@@ -2193,12 +2192,11 @@ static inline void w_BigInt_mul(w_BigInt *this, w_BigInt *other, w_BigInt *resul
         w_List_addFirst(w_BigInt_BitType_)(&(result->nums), 0);
         // result 加上 temp
         w_BigInt_add(result, &mulTemp, &resultTemp);
-        w_BigInt_add(&resultTemp, &zero, result); // 赋值给 result
+        w_BigInt_copyTo(&resultTemp, result); // 赋值给 result
     }
     // 释放临时变量
     w_BigInt_deinit(&mulTemp);
     w_BigInt_deinit(&resultTemp);
-    w_BigInt_deinit(&zero);
     // 符号位设置
     result->signum = this->signum * other->signum;
 }
@@ -2213,10 +2211,9 @@ static inline void w_BigInt_div(w_BigInt *this, w_BigInt *other, w_BigInt *resul
     result->signum = 0;
     w_List_clear(w_BigInt_BitType_)(&(result->nums));
     // 当前被除数
-    w_BigInt divTemp, quotient, ZERO, ONE, _256, temp, tmp;
+    w_BigInt divTemp, quotient, ONE, _256, temp, tmp;
     w_BigInt_init(&divTemp, "0");
     w_BigInt_init(&quotient, "0");
-    w_BigInt_init(&ZERO, "0");
     w_BigInt_init(&ONE, "1");
     w_BigInt_init(&_256, "256");
     w_BigInt_init(&temp, "0");
@@ -2227,8 +2224,8 @@ static inline void w_BigInt_div(w_BigInt *this, w_BigInt *other, w_BigInt *resul
         divTemp.signum = 1;
         w_List_addFirst(w_BigInt_BitType_)(&(divTemp.nums), w_List_get(w_BigInt_BitType_)(&(this->nums), i));
         // 商重置为 0
-        w_BigInt_mul(&quotient, &ZERO, &temp);
-        w_BigInt_add(&temp, &ZERO, &quotient);
+        quotient.signum = 0;
+        w_List_clear(w_BigInt_BitType_)(&(quotient.nums));
         // 商不断递增，直到 商乘以除数大于 被除数
         while (true)
         {
@@ -2244,26 +2241,25 @@ static inline void w_BigInt_div(w_BigInt *this, w_BigInt *other, w_BigInt *resul
                 w_BigInt_mul(&quotient, other, &temp);
                 temp.signum = temp.signum != 0 ? 1 : 0;
                 w_BigInt_sub(&divTemp, &temp, &tmp);
-                w_BigInt_add(&tmp, &ZERO, &divTemp);
+                w_BigInt_copyTo(&tmp, &divTemp);
                 // 当前商 * 256 + 当前商位
                 w_BigInt_mul(result, &_256, &tmp);
-                w_BigInt_add(&tmp, &ZERO, result);
+                w_BigInt_copyTo(&tmp, &result);
                 w_BigInt_add(result, &quotient, &tmp);
-                w_BigInt_add(&tmp, &ZERO, result);
+                w_BigInt_copyTo(&tmp, result);
                 break;
             }
             else
             {
                 // 商 + 1
                 w_BigInt_add(&quotient, &ONE, &tmp);
-                w_BigInt_add(&tmp, &ZERO, &quotient);
+                w_BigInt_copyTo(&tmp, &quotient);
             }
         }
     }
     // 释放
     w_BigInt_deinit(&divTemp);
     w_BigInt_deinit(&quotient);
-    w_BigInt_deinit(&ZERO);
     w_BigInt_deinit(&ONE);
     w_BigInt_deinit(&_256);
     w_BigInt_deinit(&temp);
@@ -2306,18 +2302,17 @@ static inline void w_BigInt_pow(w_BigInt *this, int64_t other, w_BigInt *result)
     w_assert(other >= 0);        // 幂数不能小于 0
 
     // 初始化临时变量
-    w_BigInt ZERO, ONE, TWO, temp, thisTemp;
-    w_BigInt_init(&ZERO, "0");
+    w_BigInt ONE, TWO, temp, thisTemp;
     w_BigInt_init(&ONE, "1");
     w_BigInt_init(&TWO, "2");
     w_BigInt_init(&temp, "0");
     w_BigInt_init(&thisTemp, "0");
 
     // 初始化 result 为 1
-    w_BigInt_add(&ONE, &ZERO, result);
+    w_BigInt_copyTo(&ONE, result);
 
     // 初始化 thisTemp
-    w_BigInt_add(this, &ZERO, &thisTemp);
+    w_BigInt_copyTo(this, &thisTemp);
 
     // 开始循环
     while (other > 0)
@@ -2326,17 +2321,16 @@ static inline void w_BigInt_pow(w_BigInt *this, int64_t other, w_BigInt *result)
         {
             // 奇数处理方案 result = result * this
             w_BigInt_mul(result, &thisTemp, &temp);
-            w_BigInt_add(&temp, &ZERO, result);
+            w_BigInt_copyTo(&temp, result);
         }
         // 偶数处理方案 this = this * this
         w_BigInt_mul(&thisTemp, &thisTemp, &temp);
-        w_BigInt_add(&temp, &ZERO, &thisTemp);
+        w_BigInt_copyTo(&temp, &thisTemp);
         // 幂数右移一位
         other >>= 1;
     }
 
     // 释放
-    w_BigInt_deinit(&ZERO);
     w_BigInt_deinit(&ONE);
     w_BigInt_deinit(&TWO);
     w_BigInt_deinit(&temp);
