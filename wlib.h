@@ -2251,4 +2251,25 @@ static inline void w_BigInt_div(w_BigInt *this, w_BigInt *other, w_BigInt *resul
     result->signum = this->signum * other->signum;
 }
 
+// 取模
+static inline void w_BigInt_mod(w_BigInt *this, w_BigInt *other, w_BigInt *result)
+{
+    w_assert(this != NULL && other != NULL && result != NULL);
+    w_assert(this != result && other != result);
+    w_assert(other->signum != 0); // 除数不能为 0
+
+    w_BigInt quotient, temp;
+    w_BigInt_init(&quotient, "0");
+    w_BigInt_init(&temp, "0");
+
+    // 计算商
+    w_BigInt_div(this, other, &quotient);
+    // 减去商乘以除数
+    w_BigInt_mul(&quotient, other, &temp);
+    w_BigInt_sub(this, &temp, result);
+
+    w_BigInt_deinit(&quotient);
+    w_BigInt_deinit(&temp);
+}
+
 #endif
