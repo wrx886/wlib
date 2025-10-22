@@ -2398,4 +2398,35 @@ static inline void w_BigInt_pow(w_BigInt *this, int64_t other, w_BigInt *result)
     w_BigInt_deinit(&thisTemp);
 }
 
+// gcd
+static inline void w_BigInt_gcd(w_BigInt *this, w_BigInt *other, w_BigInt *result)
+{
+    w_assert(this != NULL && other != NULL && result != NULL);
+    w_assert(this != result && other != result);
+
+    // 临时变量
+    w_BigInt temp, thisTemp, otherTemp;
+    w_BigInt_init(&temp, "0");
+    w_BigInt_init(&thisTemp, "0");
+    w_BigInt_init(&otherTemp, "0");
+    w_BigInt_copyTo(this, &thisTemp);
+    w_BigInt_copyTo(other, &otherTemp);
+
+    while (otherTemp.signum != 0)
+    {
+        // other = this % other, this <=> other
+        w_BigInt_mod(&thisTemp, &otherTemp, &temp);
+        w_BigInt_copyTo(&otherTemp, &thisTemp);
+        w_BigInt_copyTo(&temp, &otherTemp);
+    }
+
+    // 返回
+    w_BigInt_copyTo(&thisTemp, result);
+
+    // 释放
+    w_BigInt_deinit(&temp);
+    w_BigInt_deinit(&thisTemp);
+    w_BigInt_deinit(&otherTemp);
+}
+
 #endif
