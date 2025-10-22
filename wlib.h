@@ -2302,9 +2302,8 @@ static inline void w_BigInt_pow(w_BigInt *this, int64_t other, w_BigInt *result)
     w_assert(other >= 0);        // 幂数不能小于 0
 
     // 初始化临时变量
-    w_BigInt ONE, TWO, temp, thisTemp;
+    w_BigInt ONE, temp, thisTemp;
     w_BigInt_init(&ONE, "1");
-    w_BigInt_init(&TWO, "2");
     w_BigInt_init(&temp, "0");
     w_BigInt_init(&thisTemp, "0");
 
@@ -2332,7 +2331,6 @@ static inline void w_BigInt_pow(w_BigInt *this, int64_t other, w_BigInt *result)
 
     // 释放
     w_BigInt_deinit(&ONE);
-    w_BigInt_deinit(&TWO);
     w_BigInt_deinit(&temp);
     w_BigInt_deinit(&thisTemp);
 }
