@@ -2283,21 +2283,20 @@ static inline void w_BigInt_mod(w_BigInt *this, w_BigInt *other, w_BigInt *resul
 }
 
 // 快速幂
-static inline void w_BigInt_pow(w_BigInt *this, w_BigInt *other, w_BigInt *result)
+static inline void w_BigInt_pow(w_BigInt *this, int64_t other, w_BigInt *result)
 {
-    w_assert(this != NULL && other != NULL && result != NULL);
-    w_assert(this != result && other != result);
-    w_assert(this->signum != 0);  // 底数不能为 0
-    w_assert(other->signum >= 0); // 幂数不能小于 0
+    w_assert(this != NULL && result != NULL);
+    w_assert(this != result);
+    w_assert(this->signum != 0); // 底数不能为 0
+    w_assert(other >= 0);        // 幂数不能小于 0
 
     // 初始化临时变量
-    w_BigInt ZERO, ONE, TWO, temp, thisTemp, otherTemp;
+    w_BigInt ZERO, ONE, TWO, temp, thisTemp;
     w_BigInt_init(&ZERO, "0");
     w_BigInt_init(&ONE, "1");
     w_BigInt_init(&TWO, "2");
     w_BigInt_init(&temp, "0");
     w_BigInt_init(&thisTemp, "0");
-    w_BigInt_init(&otherTemp, "0");
 
     // 初始化 result 为 1
     w_BigInt_add(&ONE, &ZERO, result);
@@ -2305,13 +2304,10 @@ static inline void w_BigInt_pow(w_BigInt *this, w_BigInt *other, w_BigInt *resul
     // 初始化 thisTemp
     w_BigInt_add(this, &ZERO, &thisTemp);
 
-    // 初始化 otherTemp
-    w_BigInt_add(other, &ZERO, &otherTemp);
-
     // 开始循环
-    while (otherTemp.signum > 0)
+    while (other > 0)
     {
-        if (otherTemp.signum > 0 && (w_List_get(w_BigInt_BitType_)(&(otherTemp.nums), 0) & 1) != 0)
+        if ((other & 1) != 0)
         {
             // 奇数处理方案 result = result * this
             w_BigInt_mul(result, &thisTemp, &temp);
@@ -2321,8 +2317,7 @@ static inline void w_BigInt_pow(w_BigInt *this, w_BigInt *other, w_BigInt *resul
         w_BigInt_mul(&thisTemp, &thisTemp, &temp);
         w_BigInt_add(&temp, &ZERO, &thisTemp);
         // 幂数右移一位
-        w_BigInt_div(&otherTemp, &TWO, &temp);
-        w_BigInt_add(&temp, &ZERO, &otherTemp);
+        other >>= 1;
     }
 
     // 释放
@@ -2331,7 +2326,6 @@ static inline void w_BigInt_pow(w_BigInt *this, w_BigInt *other, w_BigInt *resul
     w_BigInt_deinit(&TWO);
     w_BigInt_deinit(&temp);
     w_BigInt_deinit(&thisTemp);
-    w_BigInt_deinit(&otherTemp);
 }
 
 #endif
