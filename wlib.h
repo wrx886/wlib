@@ -2182,4 +2182,73 @@ static inline void w_BigInt_mul(w_BigInt *this, w_BigInt *other, w_BigInt *resul
     result->signum = this->signum * other->signum;
 }
 
+// 除法
+static inline void w_BigInt_div(w_BigInt *this, w_BigInt *other, w_BigInt *result)
+{
+    w_assert(this != NULL && other != NULL && result != NULL);
+    w_assert(this != result && other != result);
+    w_assert(other->signum != 0); // 除数不能为 0
+    // 清空 result
+    result->signum = 0;
+    w_List_clear(w_BigInt_BitType_)(&(result->nums));
+    // 当前被除数
+    w_BigInt divTemp, quotient, ZERO, ONE, _256, temp, tmp;
+    w_BigInt_init(&divTemp, "0");
+    w_BigInt_init(&quotient, "0");
+    w_BigInt_init(&ZERO, "0");
+    w_BigInt_init(&ONE, "1");
+    w_BigInt_init(&_256, "256");
+    w_BigInt_init(&temp, "0");
+    w_BigInt_init(&tmp, "0");
+    for (int64_t i = w_List_size(w_BigInt_BitType_)(&(this->nums)) - 1; i >= 0; i--)
+    {
+        // 放入一位
+        divTemp.signum = 1;
+        w_List_addFirst(w_BigInt_BitType_)(&(divTemp.nums), w_List_get(w_BigInt_BitType_)(&(this->nums), i));
+        // 商重置为 0
+        w_BigInt_mul(&quotient, &ZERO, &temp);
+        w_BigInt_add(&temp, &ZERO, &quotient);
+        // 商不断递增，直到 商乘以除数大于 被除数
+        while (true)
+        {
+            // 计算 商 + 1 的值
+            w_BigInt_add(&quotient, &ONE, &tmp);
+            // 计算 (商 + 1) * 除数
+            w_BigInt_mul(&tmp, other, &temp);
+            temp.signum = temp.signum != 0 ? 1 : 0; // 确保积非负
+            // 判断是否位合适的商
+            if (w_compare(w_BigInt)(&temp, &divTemp) > 0)
+            {
+                // 减去 商 * 除数
+                w_BigInt_mul(&quotient, other, &temp);
+                temp.signum = temp.signum != 0 ? 1 : 0;
+                w_BigInt_sub(&divTemp, &temp, &tmp);
+                w_BigInt_add(&tmp, &ZERO, &divTemp);
+                // 当前商 * 256 + 当前商位
+                w_BigInt_mul(result, &_256, &tmp);
+                w_BigInt_add(&tmp, &ZERO, result);
+                w_BigInt_add(result, &quotient, &tmp);
+                w_BigInt_add(&tmp, &ZERO, result);
+                break;
+            }
+            else
+            {
+                // 商 + 1
+                w_BigInt_add(&quotient, &ONE, &tmp);
+                w_BigInt_add(&tmp, &ZERO, &quotient);
+            }
+        }
+    }
+    // 释放
+    w_BigInt_deinit(&divTemp);
+    w_BigInt_deinit(&quotient);
+    w_BigInt_deinit(&ZERO);
+    w_BigInt_deinit(&ONE);
+    w_BigInt_deinit(&_256);
+    w_BigInt_deinit(&temp);
+    w_BigInt_deinit(&tmp);
+    // 符号位
+    result->signum = this->signum * other->signum;
+}
+
 #endif
