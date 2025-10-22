@@ -2219,10 +2219,9 @@ static inline void w_BigInt_mul(w_BigInt *this, w_BigInt *other, w_BigInt *resul
     w_assert(this != result && other != result);
     // 清空 result
     w_List_clear(w_BigInt_BitType_)(&(result->nums));
-    // 符号位
-    result->signum = this->signum * other->signum;
+    result->signum = 0;
     // 0
-    if (result->signum == 0)
+    if (this->signum * other->signum == 0)
     {
         return;
     }
@@ -2254,7 +2253,10 @@ static inline void w_BigInt_mul(w_BigInt *this, w_BigInt *other, w_BigInt *resul
             w_List_addLast(w_BigInt_BitType_)(&(mulTemp.nums), carry);
         }
         // result 乘以 256
-        w_List_addFirst(w_BigInt_BitType_)(&(result->nums), 0);
+        if (result->signum != 0)
+        {
+            w_List_addFirst(w_BigInt_BitType_)(&(result->nums), 0);
+        }
         // result 加上 temp
         w_BigInt_add(result, &mulTemp, &resultTemp);
         w_BigInt_copyTo(&resultTemp, result); // 赋值给 result
@@ -2276,11 +2278,9 @@ static inline void w_BigInt_div(w_BigInt *this, w_BigInt *other, w_BigInt *resul
     result->signum = 0;
     w_List_clear(w_BigInt_BitType_)(&(result->nums));
     // 当前被除数
-    w_BigInt divTemp, quotient, ONE, _256, temp, tmp;
+    w_BigInt divTemp, quotient, temp, tmp;
     w_BigInt_init(&divTemp, "0");
     w_BigInt_init(&quotient, "0");
-    w_BigInt_init(&ONE, "1");
-    w_BigInt_init(&_256, "256");
     w_BigInt_init(&temp, "0");
     w_BigInt_init(&tmp, "0");
     for (int64_t i = w_List_size(w_BigInt_BitType_)(&(this->nums)) - 1; i >= 0; i--)
@@ -2295,7 +2295,7 @@ static inline void w_BigInt_div(w_BigInt *this, w_BigInt *other, w_BigInt *resul
         while (true)
         {
             // 计算 商 + 1 的值
-            w_BigInt_add(&quotient, &ONE, &tmp);
+            w_BigInt_add(&quotient, w_BigInt_ONE(), &tmp);
             // 计算 (商 + 1) * 除数
             w_BigInt_mul(&tmp, other, &temp);
             temp.signum = temp.signum != 0 ? 1 : 0; // 确保积非负
@@ -2308,8 +2308,10 @@ static inline void w_BigInt_div(w_BigInt *this, w_BigInt *other, w_BigInt *resul
                 w_BigInt_sub(&divTemp, &temp, &tmp);
                 w_BigInt_copyTo(&tmp, &divTemp);
                 // 当前商 * 256 + 当前商位
-                w_BigInt_mul(result, &_256, &tmp);
-                w_BigInt_copyTo(&tmp, result);
+                if (result->signum != 0)
+                {
+                    w_List_addFirst(w_BigInt_BitType_)(&(result->nums), 0);
+                }
                 w_BigInt_add(result, &quotient, &tmp);
                 w_BigInt_copyTo(&tmp, result);
                 break;
@@ -2317,7 +2319,7 @@ static inline void w_BigInt_div(w_BigInt *this, w_BigInt *other, w_BigInt *resul
             else
             {
                 // 商 + 1
-                w_BigInt_add(&quotient, &ONE, &tmp);
+                w_BigInt_add(&quotient, w_BigInt_ONE(), &tmp);
                 w_BigInt_copyTo(&tmp, &quotient);
             }
         }
@@ -2325,8 +2327,6 @@ static inline void w_BigInt_div(w_BigInt *this, w_BigInt *other, w_BigInt *resul
     // 释放
     w_BigInt_deinit(&divTemp);
     w_BigInt_deinit(&quotient);
-    w_BigInt_deinit(&ONE);
-    w_BigInt_deinit(&_256);
     w_BigInt_deinit(&temp);
     w_BigInt_deinit(&tmp);
     // 符号位
@@ -2367,13 +2367,12 @@ static inline void w_BigInt_pow(w_BigInt *this, int64_t other, w_BigInt *result)
     w_assert(other >= 0);        // 幂数不能小于 0
 
     // 初始化临时变量
-    w_BigInt ONE, temp, thisTemp;
-    w_BigInt_init(&ONE, "1");
+    w_BigInt temp, thisTemp;
     w_BigInt_init(&temp, "0");
     w_BigInt_init(&thisTemp, "0");
 
     // 初始化 result 为 1
-    w_BigInt_copyTo(&ONE, result);
+    w_BigInt_copyTo(w_BigInt_ONE(), result);
 
     // 初始化 thisTemp
     w_BigInt_copyTo(this, &thisTemp);
@@ -2395,7 +2394,6 @@ static inline void w_BigInt_pow(w_BigInt *this, int64_t other, w_BigInt *result)
     }
 
     // 释放
-    w_BigInt_deinit(&ONE);
     w_BigInt_deinit(&temp);
     w_BigInt_deinit(&thisTemp);
 }
