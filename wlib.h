@@ -2244,7 +2244,7 @@ static inline void w_BigInt_div(w_BigInt *this, w_BigInt *other, w_BigInt *resul
                 w_BigInt_copyTo(&tmp, &divTemp);
                 // 当前商 * 256 + 当前商位
                 w_BigInt_mul(result, &_256, &tmp);
-                w_BigInt_copyTo(&tmp, &result);
+                w_BigInt_copyTo(&tmp, result);
                 w_BigInt_add(result, &quotient, &tmp);
                 w_BigInt_copyTo(&tmp, result);
                 break;
