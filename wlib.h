@@ -2013,7 +2013,7 @@ static inline void w_BigInt_addSameSign_(w_BigInt *this, w_BigInt *other, w_BigI
     // 清空 result
     w_List_clear(w_BigInt_BitType_)(&(result->nums));
     // 符号位
-    result->signum = this->signum;
+    result->signum = this->signum != 0 ? this->signum : other->signum;
     // 计算数字位的和
     int64_t thisSize = w_List_size(w_BigInt_BitType_)(&(this->nums));
     int64_t otherSize = w_List_size(w_BigInt_BitType_)(&(other->nums));
@@ -2043,7 +2043,7 @@ static inline void w_BigInt_subSameSign_(w_BigInt *this, w_BigInt *other, w_BigI
     // 清空 result
     w_List_clear(w_BigInt_BitType_)(&(result->nums));
     // 判断数字大小并处理符号位
-    result->signum = this->signum;
+    result->signum = this->signum != 0 ? this->signum : other->signum;
     if (w_compare(w_BigInt)(this, other) < 0)
     {
         result->signum = -result->signum; // 符号位取反
@@ -2096,7 +2096,7 @@ static inline void w_BigInt_add(w_BigInt *this, w_BigInt *other, w_BigInt *resul
     w_assert(this != NULL && other != NULL && result != NULL);
     w_assert(this != result && other != result);
     // 符号位不同
-    if (this->signum != other->signum)
+    if (this->signum * other->signum < 0)
     {
         // 减法，即对 other 取反后 进行加法
         w_BigInt_subSameSign_(this, other, result);
@@ -2114,7 +2114,7 @@ static inline void w_BigInt_sub(w_BigInt *this, w_BigInt *other, w_BigInt *resul
     w_assert(this != NULL && other != NULL && result != NULL);
     w_assert(this != result && other != result);
     // 符号位不同
-    if (this->signum != other->signum)
+    if (this->signum * other->signum < 0)
     {
         // 加法，即对 other 取反后 进行加法
         w_BigInt_addSameSign_(this, other, result);
