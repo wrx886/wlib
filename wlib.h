@@ -2792,7 +2792,7 @@ static inline void w_BigInt_shiftRight(w_BigInt *this, int64_t n, w_BigInt *resu
     int64_t bits = n % 8;
     if (w_List_size(w_BigInt_BitType_)(&(result->nums)) > 0 && bits > 0)
     {
-        for (int64_t i = 0; i < (w_List_size(w_BigInt_BitType_)(&(result->nums)) - 1) * 8; i++)
+        for (int64_t i = 0; i < w_List_size(w_BigInt_BitType_)(&(result->nums)) - 1; i++)
         {
             w_List_set(w_BigInt_BitType_)(&(result->nums), i, (w_List_get(w_BigInt_BitType_)(&(result->nums), i) >> bits) | (w_List_get(w_BigInt_BitType_)(&(result->nums), i + 1) << (8 - bits)));
         }
