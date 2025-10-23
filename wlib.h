@@ -2692,4 +2692,53 @@ static inline void w_BigInt_xor(w_BigInt *this, w_BigInt *other, w_BigInt *resul
     w_BigInt_deinit(&otherTemp);
 }
 
+// 按位取反
+static inline void w_BigInt_not(w_BigInt *this, w_BigInt *result)
+{
+    w_assert(this != NULL && result != NULL);
+    w_assert(this != result);
+
+    // 临时变量
+    w_BigInt temp;
+    w_BigInt_init(&temp, "0");
+
+    // 取补码
+    w_BigInt_toComplement_(this, result);
+
+    // 按位与
+    for (int64_t i = 0; i < w_List_size(w_BigInt_BitType_)(&(result->nums)); i++)
+    {
+        w_List_set(w_BigInt_BitType_)(&(result->nums), i, ~(w_List_get(w_BigInt_BitType_)(&(result->nums), i)));
+    }
+
+    // 符号位
+    result->signum = -1 * result->signum;
+    if (result->signum < 0)
+    {
+        result->signum = -1;
+    }
+    else if (result->signum > 0)
+    {
+        result->signum = 1;
+    }
+
+    // 去除多余的 0
+    while (w_List_size(w_BigInt_BitType_)(&(result->nums)) > 0 && w_List_get(w_BigInt_BitType_)(&(result->nums), w_List_size(w_BigInt_BitType_)(&(result->nums)) - 1) == 0)
+    {
+        w_List_removeLast(w_BigInt_BitType_)(&(result->nums));
+    }
+    // 表示 0 时候，nums 为空且 signum 为 0
+    if (w_List_size(w_BigInt_BitType_)(&(result->nums)) == 0)
+    {
+        result->signum = 0;
+    }
+
+    // 取补码，得到原码
+    w_BigInt_toComplement_(result, &temp);
+    w_BigInt_copyTo(&temp, result);
+
+    // 释放
+    w_BigInt_deinit(&temp);
+}
+
 #endif
