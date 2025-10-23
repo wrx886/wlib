@@ -2449,4 +2449,247 @@ static inline void w_BigInt_negate(w_BigInt *this, w_BigInt *result)
     result->signum = -result->signum;
 }
 
+// 转为补码表示
+static inline void w_BigInt_toComplement_(w_BigInt *this, w_BigInt *result)
+{
+    w_assert(this != NULL && result != NULL);
+    w_assert(this != result);
+    w_BigInt_copyTo(this, result);
+    if (result->signum < 0)
+    {
+        // 负数
+        // 符号位设置为正数
+        result->signum = 1;
+        // 按位取反，符号位不变（反码）
+        int64_t len = w_List_size(w_BigInt_BitType_)(&(result->nums));
+        for (int64_t i = 0; i < len; i++)
+        {
+            w_List_set(w_BigInt_BitType_)(&(result->nums), i, ~w_List_get(w_BigInt_BitType_)(&(result->nums), i));
+        }
+        // 数字部分加 1
+        w_BigInt temp;
+        w_BigInt_init(&temp, "0");
+        w_BigInt_add(result, w_BigInt_ONE(), &temp);
+        w_BigInt_copyTo(&temp, result);
+        w_BigInt_deinit(&temp);
+        // 符号位处理
+        if (w_List_size(w_BigInt_BitType_)(&(result->nums)) > len)
+        {
+            result->signum = this->signum ^ w_List_get(w_BigInt_BitType_)(&(result->nums), len);
+            w_List_removeLast(w_BigInt_BitType_)(&(result->nums));
+            if (result->signum < 0)
+            {
+                result->signum = -1;
+            }
+            else if (result->signum > 0)
+            {
+                result->signum = 1;
+            }
+        }
+        else
+        {
+            result->signum = this->signum;
+        }
+        // 去除多余的 0
+        while (w_List_size(w_BigInt_BitType_)(&(result->nums)) > 0 && w_List_get(w_BigInt_BitType_)(&(result->nums), w_List_size(w_BigInt_BitType_)(&(result->nums)) - 1) == 0)
+        {
+            w_List_removeLast(w_BigInt_BitType_)(&(result->nums));
+        }
+        // 表示 0 时候，nums 为空且 signum 为 0
+        if (w_List_size(w_BigInt_BitType_)(&(result->nums)) == 0)
+        {
+            result->signum = 0;
+        }
+    }
+}
+
+// 按位与
+static inline void w_BigInt_and(w_BigInt *this, w_BigInt *other, w_BigInt *result)
+{
+    w_assert(this != NULL && other != NULL && result != NULL);
+    w_assert(this != result && other != result);
+
+    // 清空 result
+    result->signum = 0;
+    w_List_clear(w_BigInt_BitType_)(&(result->nums));
+
+    // 临时变量
+    w_BigInt temp, thisTemp, otherTemp;
+    w_BigInt_init(&temp, "0");
+    w_BigInt_init(&thisTemp, "0");
+    w_BigInt_init(&otherTemp, "0");
+
+    // 取补码
+    w_BigInt_toComplement_(this, &thisTemp);
+    w_BigInt_toComplement_(other, &otherTemp);
+
+    // 按位与
+    int64_t thisLen = w_List_size(w_BigInt_BitType_)(&(thisTemp.nums));
+    int64_t otherLen = w_List_size(w_BigInt_BitType_)(&(otherTemp.nums));
+    int64_t maxLen = thisLen > otherLen ? thisLen : otherLen;
+    for (int64_t i = 0; i < maxLen; i++)
+    {
+        int64_t thisNum = i < thisLen ? w_List_get(w_BigInt_BitType_)(&(thisTemp.nums), i) : 0;
+        int64_t otherNum = i < otherLen ? w_List_get(w_BigInt_BitType_)(&(otherTemp.nums), i) : 0;
+        w_List_addLast(w_BigInt_BitType_)(&(result->nums), thisNum & otherNum);
+    }
+
+    // 符号位
+    result->signum = this->signum & other->signum;
+    if (result->signum < 0)
+    {
+        result->signum = -1;
+    }
+    else if (result->signum > 0)
+    {
+        result->signum = 1;
+    }
+
+    // 去除多余的 0
+    while (w_List_size(w_BigInt_BitType_)(&(result->nums)) > 0 && w_List_get(w_BigInt_BitType_)(&(result->nums), w_List_size(w_BigInt_BitType_)(&(result->nums)) - 1) == 0)
+    {
+        w_List_removeLast(w_BigInt_BitType_)(&(result->nums));
+    }
+    // 表示 0 时候，nums 为空且 signum 为 0
+    if (w_List_size(w_BigInt_BitType_)(&(result->nums)) == 0)
+    {
+        result->signum = 0;
+    }
+
+    // 取补码，得到原码
+    w_BigInt_toComplement_(result, &temp);
+    w_BigInt_copyTo(&temp, result);
+
+    // 释放
+    w_BigInt_deinit(&temp);
+    w_BigInt_deinit(&thisTemp);
+    w_BigInt_deinit(&otherTemp);
+}
+
+// 按位或
+static inline void w_BigInt_or(w_BigInt *this, w_BigInt *other, w_BigInt *result)
+{
+    w_assert(this != NULL && other != NULL && result != NULL);
+    w_assert(this != result && other != result);
+
+    // 清空 result
+    result->signum = 0;
+    w_List_clear(w_BigInt_BitType_)(&(result->nums));
+
+    // 临时变量
+    w_BigInt temp, thisTemp, otherTemp;
+    w_BigInt_init(&temp, "0");
+    w_BigInt_init(&thisTemp, "0");
+    w_BigInt_init(&otherTemp, "0");
+
+    // 取补码
+    w_BigInt_toComplement_(this, &thisTemp);
+    w_BigInt_toComplement_(other, &otherTemp);
+
+    // 按位与
+    int64_t thisLen = w_List_size(w_BigInt_BitType_)(&(thisTemp.nums));
+    int64_t otherLen = w_List_size(w_BigInt_BitType_)(&(otherTemp.nums));
+    int64_t maxLen = thisLen > otherLen ? thisLen : otherLen;
+    for (int64_t i = 0; i < maxLen; i++)
+    {
+        int64_t thisNum = i < thisLen ? w_List_get(w_BigInt_BitType_)(&(thisTemp.nums), i) : 0;
+        int64_t otherNum = i < otherLen ? w_List_get(w_BigInt_BitType_)(&(otherTemp.nums), i) : 0;
+        w_List_addLast(w_BigInt_BitType_)(&(result->nums), thisNum | otherNum);
+    }
+
+    // 符号位
+    result->signum = this->signum | other->signum;
+    if (result->signum < 0)
+    {
+        result->signum = -1;
+    }
+    else if (result->signum > 0)
+    {
+        result->signum = 1;
+    }
+
+    // 去除多余的 0
+    while (w_List_size(w_BigInt_BitType_)(&(result->nums)) > 0 && w_List_get(w_BigInt_BitType_)(&(result->nums), w_List_size(w_BigInt_BitType_)(&(result->nums)) - 1) == 0)
+    {
+        w_List_removeLast(w_BigInt_BitType_)(&(result->nums));
+    }
+    // 表示 0 时候，nums 为空且 signum 为 0
+    if (w_List_size(w_BigInt_BitType_)(&(result->nums)) == 0)
+    {
+        result->signum = 0;
+    }
+
+    // 取补码，得到原码
+    w_BigInt_toComplement_(result, &temp);
+    w_BigInt_copyTo(&temp, result);
+
+    // 释放
+    w_BigInt_deinit(&temp);
+    w_BigInt_deinit(&thisTemp);
+    w_BigInt_deinit(&otherTemp);
+}
+
+// 按位异或
+static inline void w_BigInt_xor(w_BigInt *this, w_BigInt *other, w_BigInt *result)
+{
+    w_assert(this != NULL && other != NULL && result != NULL);
+    w_assert(this != result && other != result);
+
+    // 清空 result
+    result->signum = 0;
+    w_List_clear(w_BigInt_BitType_)(&(result->nums));
+
+    // 临时变量
+    w_BigInt temp, thisTemp, otherTemp;
+    w_BigInt_init(&temp, "0");
+    w_BigInt_init(&thisTemp, "0");
+    w_BigInt_init(&otherTemp, "0");
+
+    // 取补码
+    w_BigInt_toComplement_(this, &thisTemp);
+    w_BigInt_toComplement_(other, &otherTemp);
+
+    // 按位与
+    int64_t thisLen = w_List_size(w_BigInt_BitType_)(&(thisTemp.nums));
+    int64_t otherLen = w_List_size(w_BigInt_BitType_)(&(otherTemp.nums));
+    int64_t maxLen = thisLen > otherLen ? thisLen : otherLen;
+    for (int64_t i = 0; i < maxLen; i++)
+    {
+        int64_t thisNum = i < thisLen ? w_List_get(w_BigInt_BitType_)(&(thisTemp.nums), i) : 0;
+        int64_t otherNum = i < otherLen ? w_List_get(w_BigInt_BitType_)(&(otherTemp.nums), i) : 0;
+        w_List_addLast(w_BigInt_BitType_)(&(result->nums), thisNum ^ otherNum);
+    }
+
+    // 符号位
+    result->signum = this->signum ^ other->signum;
+    if (result->signum < 0)
+    {
+        result->signum = -1;
+    }
+    else if (result->signum > 0)
+    {
+        result->signum = 1;
+    }
+
+    // 去除多余的 0
+    while (w_List_size(w_BigInt_BitType_)(&(result->nums)) > 0 && w_List_get(w_BigInt_BitType_)(&(result->nums), w_List_size(w_BigInt_BitType_)(&(result->nums)) - 1) == 0)
+    {
+        w_List_removeLast(w_BigInt_BitType_)(&(result->nums));
+    }
+    // 表示 0 时候，nums 为空且 signum 为 0
+    if (w_List_size(w_BigInt_BitType_)(&(result->nums)) == 0)
+    {
+        result->signum = 0;
+    }
+
+    // 取补码，得到原码
+    w_BigInt_toComplement_(result, &temp);
+    w_BigInt_copyTo(&temp, result);
+
+    // 释放
+    w_BigInt_deinit(&temp);
+    w_BigInt_deinit(&thisTemp);
+    w_BigInt_deinit(&otherTemp);
+}
+
 #endif
