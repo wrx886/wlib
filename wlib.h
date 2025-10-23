@@ -2535,7 +2535,7 @@ static inline void w_BigInt_and(w_BigInt *this, w_BigInt *other, w_BigInt *resul
     }
 
     // 符号位
-    result->signum = this->signum & other->signum;
+    result->signum = thisTemp.signum & otherTemp.signum;
     if (result->signum < 0)
     {
         result->signum = -1;
@@ -2598,7 +2598,7 @@ static inline void w_BigInt_or(w_BigInt *this, w_BigInt *other, w_BigInt *result
     }
 
     // 符号位
-    result->signum = this->signum | other->signum;
+    result->signum = thisTemp.signum | otherTemp.signum;
     if (result->signum < 0)
     {
         result->signum = -1;
@@ -2661,7 +2661,7 @@ static inline void w_BigInt_xor(w_BigInt *this, w_BigInt *other, w_BigInt *resul
     }
 
     // 符号位
-    result->signum = this->signum ^ other->signum;
+    result->signum = thisTemp.signum ^ otherTemp.signum;
     if (result->signum < 0)
     {
         result->signum = -1;
