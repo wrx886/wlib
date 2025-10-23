@@ -2411,6 +2411,8 @@ static inline void w_BigInt_gcd(w_BigInt *this, w_BigInt *other, w_BigInt *resul
     w_BigInt_init(&otherTemp, "0");
     w_BigInt_copyTo(this, &thisTemp);
     w_BigInt_copyTo(other, &otherTemp);
+    thisTemp.signum = thisTemp.signum != 0 ? 1 : 0;
+    otherTemp.signum = otherTemp.signum != 0 ? 1 : 0;
 
     while (otherTemp.signum != 0)
     {
