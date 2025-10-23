@@ -2825,7 +2825,7 @@ static inline int8_t w_BigInt_bitAt(w_BigInt *this, int64_t bitIndex)
     // 获取 bitIndex 位的索引
     int8_t bit = bitIndex % 8;
     // 获取 bitIndex 位的值
-    return ((w_List_size(w_BigInt_BitType_)(&(this->nums)) > 0 ? w_List_get(w_BigInt_BitType_)(&(this->nums), index) : 0) >> bit) & 1;
+    return ((index < w_List_size(w_BigInt_BitType_)(&(this->nums)) ? w_List_get(w_BigInt_BitType_)(&(this->nums), index) : 0) >> bit) & 1;
 }
 
 #endif
