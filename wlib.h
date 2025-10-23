@@ -1820,7 +1820,12 @@ typedef struct
     int8_t signum; // 符号位：-1 0 +1
 } w_BigInt;
 
-// 大整型初始化
+/**
+ * 大整型初始化
+ * @param this
+ * @param number 数字字符串
+ * @return void
+ */
 static inline void w_BigInt_init(w_BigInt *this, char *number)
 {
     w_assert(this != NULL);
@@ -1886,14 +1891,23 @@ static inline void w_BigInt_init(w_BigInt *this, char *number)
     w_StringBuilder_deinit(&numberBuilder);
 }
 
-// 大整型析构
+/**
+ * 大整型析构
+ * @param this
+ * @return void
+ */
 static inline void w_BigInt_deinit(w_BigInt *this)
 {
     w_assert(this != NULL);
     w_List_deinit(w_BigInt_BitType_)(&(this->nums));
 }
 
-// 转为字符串构造器
+/**
+ * 转为字符串构造器
+ * @param this
+ * @param builder 字符串构造器
+ * @return void
+ */
 static inline void w_BigInt_toStringBuilder(w_BigInt *this, w_StringBuilder *builder)
 {
     w_assert(this != NULL);
@@ -1950,7 +1964,12 @@ static inline void w_BigInt_toStringBuilder(w_BigInt *this, w_StringBuilder *bui
     }
 }
 
-// 比较函数
+/**
+ * 比较函数
+ * @param this
+ * @param other
+ * @return int64_t 返回 this - other 的符号（-1 0 +1）
+ */
 static inline int64_t w_compare(w_BigInt)(w_BigInt *this, w_BigInt *other)
 {
     w_assert(this != NULL && other != NULL);
@@ -1990,13 +2009,22 @@ static inline int64_t w_compare(w_BigInt)(w_BigInt *this, w_BigInt *other)
     return 0;
 }
 
-// 比较函数
+/**
+ * 比较函数
+ * @param this
+ * @param other
+ * @return bool
+ */
 static inline bool w_equals(w_BigInt)(w_BigInt *this, w_BigInt *other)
 {
     return w_compare(w_BigInt)(this, other) == 0;
 }
 
-// 哈希函数
+/**
+ * 哈希函数
+ * @param this
+ * @return int64_t
+ */
 static inline int64_t w_hash(w_BigInt)(w_BigInt *this)
 {
     w_assert(this != NULL);
@@ -2011,7 +2039,12 @@ static inline int64_t w_hash(w_BigInt)(w_BigInt *this)
     return hash;
 }
 
-// 复制函数
+/**
+ * 复制函数，将 this 复制到 result 中
+ * @param this
+ * @param result
+ * @return void
+ */
 static inline void w_BigInt_copyTo(w_BigInt *this, w_BigInt *result)
 {
     w_assert(this != NULL && result != NULL);
@@ -2026,7 +2059,10 @@ static inline void w_BigInt_copyTo(w_BigInt *this, w_BigInt *result)
     }
 }
 
-// 常量 0
+/**
+ * 常量 0
+ * @return w_BigInt * 禁止修改内部的任何值，否则会导致 bug
+ */
 static inline w_BigInt *w_BigInt_ZERO()
 {
     static w_BigInt ZERO;
@@ -2039,7 +2075,10 @@ static inline w_BigInt *w_BigInt_ZERO()
     return &ZERO;
 }
 
-// 常量 1
+/**
+ * 常量 1
+ * @return w_BigInt * 禁止修改内部任何值，否则会导致 bug
+ */
 static inline w_BigInt *w_BigInt_ONE()
 {
     static w_BigInt ONE;
@@ -2052,7 +2091,10 @@ static inline w_BigInt *w_BigInt_ONE()
     return &ONE;
 }
 
-// 常量 2
+/**
+ * 常量 2
+ * @return w_BigInt * 禁止修改内部任何值，否则会导致 bug
+ */
 static inline w_BigInt *w_BigInt_TWO()
 {
     static w_BigInt TWO;
@@ -2065,7 +2107,10 @@ static inline w_BigInt *w_BigInt_TWO()
     return &TWO;
 }
 
-// 常量 -1
+/**
+ * 常量 -1
+ * @return w_BigInt * 禁止修改内部任何值，否则会导致 bug
+ */
 static inline w_BigInt *w_BigInt_NEGATIVE_ONE()
 {
     static w_BigInt NEGATIVE_ONE;
@@ -2078,7 +2123,10 @@ static inline w_BigInt *w_BigInt_NEGATIVE_ONE()
     return &NEGATIVE_ONE;
 }
 
-// 常量 10
+/**
+ * 常量 10
+ * @return w_BigInt * 禁止修改内部任何值，否则会导致 bug
+ */
 static inline w_BigInt *w_BigInt_TEN()
 {
     static w_BigInt TEN;
@@ -2091,7 +2139,13 @@ static inline w_BigInt *w_BigInt_TEN()
     return &TEN;
 }
 
-// 同符号加法，需要手动确保 this 和 other 符号位相同
+/**
+ * 同符号加法，需要手动确保 this 和 other 符号位相同
+ * @param this
+ * @param other
+ * @param result
+ * @return void
+ */
 static inline void w_BigInt_addSameSign_(w_BigInt *this, w_BigInt *other, w_BigInt *result)
 {
     w_assert(this != NULL && other != NULL && result != NULL);
@@ -2121,7 +2175,13 @@ static inline void w_BigInt_addSameSign_(w_BigInt *this, w_BigInt *other, w_BigI
     }
 }
 
-// 同符号减法，需要手动确保 this 和 other 符号位相同
+/**
+ * 同符号减法，需要手动确保 this 和 other 符号位相同
+ * @param this
+ * @param other
+ * @param result
+ * @return void
+ */
 static inline void w_BigInt_subSameSign_(w_BigInt *this, w_BigInt *other, w_BigInt *result)
 {
     w_assert(this != NULL && other != NULL && result != NULL);
@@ -2176,7 +2236,13 @@ static inline void w_BigInt_subSameSign_(w_BigInt *this, w_BigInt *other, w_BigI
     }
 }
 
-// 加法
+/**
+ * 加法
+ * @param this
+ * @param other
+ * @param result
+ * @return void
+ */
 static inline void w_BigInt_add(w_BigInt *this, w_BigInt *other, w_BigInt *result)
 {
     w_assert(this != NULL && other != NULL && result != NULL);
@@ -2194,7 +2260,13 @@ static inline void w_BigInt_add(w_BigInt *this, w_BigInt *other, w_BigInt *resul
     }
 }
 
-// 减法
+/**
+ * 减法
+ * @param this
+ * @param other
+ * @param result
+ * @return void
+ */
 static inline void w_BigInt_sub(w_BigInt *this, w_BigInt *other, w_BigInt *result)
 {
     w_assert(this != NULL && other != NULL && result != NULL);
@@ -2212,7 +2284,13 @@ static inline void w_BigInt_sub(w_BigInt *this, w_BigInt *other, w_BigInt *resul
     }
 }
 
-// 乘法
+/**
+ * 乘法
+ * @param this
+ * @param other
+ * @param result
+ * @return void
+ */
 static inline void w_BigInt_mul(w_BigInt *this, w_BigInt *other, w_BigInt *result)
 {
     w_assert(this != NULL && other != NULL && result != NULL);
@@ -2268,7 +2346,13 @@ static inline void w_BigInt_mul(w_BigInt *this, w_BigInt *other, w_BigInt *resul
     result->signum = this->signum * other->signum;
 }
 
-// 除法
+/**
+ * 除法
+ * @param this 被除数
+ * @param other 除数
+ * @param result 商
+ * @return void
+ */
 static inline void w_BigInt_div(w_BigInt *this, w_BigInt *other, w_BigInt *result)
 {
     w_assert(this != NULL && other != NULL && result != NULL);
@@ -2337,7 +2421,13 @@ static inline void w_BigInt_div(w_BigInt *this, w_BigInt *other, w_BigInt *resul
     }
 }
 
-// 取模
+/**
+ * 取模
+ * @param this
+ * @param other
+ * @param result result = this % other
+ * @return void
+ */
 static inline void w_BigInt_mod(w_BigInt *this, w_BigInt *other, w_BigInt *result)
 {
     w_assert(this != NULL && other != NULL && result != NULL);
@@ -2358,7 +2448,13 @@ static inline void w_BigInt_mod(w_BigInt *this, w_BigInt *other, w_BigInt *resul
     w_BigInt_deinit(&temp);
 }
 
-// 快速幂
+/**
+ * 快速幂
+ * @param this 底数
+ * @param other 幂数
+ * @param result 结果
+ * @return void
+ */
 static inline void w_BigInt_pow(w_BigInt *this, int64_t other, w_BigInt *result)
 {
     w_assert(this != NULL && result != NULL);
@@ -2398,7 +2494,13 @@ static inline void w_BigInt_pow(w_BigInt *this, int64_t other, w_BigInt *result)
     w_BigInt_deinit(&thisTemp);
 }
 
-// gcd
+/**
+ * 最大公约数
+ * @param this
+ * @param other
+ * @param result result = gcd(this, other)
+ * @return void
+ */
 static inline void w_BigInt_gcd(w_BigInt *this, w_BigInt *other, w_BigInt *result)
 {
     w_assert(this != NULL && other != NULL && result != NULL);
@@ -2431,7 +2533,12 @@ static inline void w_BigInt_gcd(w_BigInt *this, w_BigInt *other, w_BigInt *resul
     w_BigInt_deinit(&otherTemp);
 }
 
-// abs
+/**
+ * 绝对值
+ * @param this
+ * @param result result = |this|
+ * @return void
+ */
 static inline void w_BigInt_abs(w_BigInt *this, w_BigInt *result)
 {
     w_assert(this != NULL && result != NULL);
@@ -2440,7 +2547,12 @@ static inline void w_BigInt_abs(w_BigInt *this, w_BigInt *result)
     result->signum = result->signum != 0 ? 1 : 0;
 }
 
-// negate
+/**
+ * 取相反数
+ * @param this
+ * @param result result = -this
+ * @return void
+ */
 static inline void w_BigInt_negate(w_BigInt *this, w_BigInt *result)
 {
     w_assert(this != NULL && result != NULL);
@@ -2449,7 +2561,12 @@ static inline void w_BigInt_negate(w_BigInt *this, w_BigInt *result)
     result->signum = -result->signum;
 }
 
-// 转为补码表示
+/**
+ * 转为补码表示
+ * @param this
+ * @param result 数字位使用补码表示
+ * @return void
+ */
 static inline void w_BigInt_toComplement_(w_BigInt *this, w_BigInt *result)
 {
     w_assert(this != NULL && result != NULL);
@@ -2503,7 +2620,13 @@ static inline void w_BigInt_toComplement_(w_BigInt *this, w_BigInt *result)
     }
 }
 
-// 按位与
+/**
+ * 按位与
+ * @param this
+ * @param other
+ * @param result result = this & other
+ * @return void
+ */
 static inline void w_BigInt_and(w_BigInt *this, w_BigInt *other, w_BigInt *result)
 {
     w_assert(this != NULL && other != NULL && result != NULL);
@@ -2566,7 +2689,13 @@ static inline void w_BigInt_and(w_BigInt *this, w_BigInt *other, w_BigInt *resul
     w_BigInt_deinit(&otherTemp);
 }
 
-// 按位或
+/**
+ * 按位或
+ * @param this
+ * @param other
+ * @param result result = this | other
+ * @return void
+ */
 static inline void w_BigInt_or(w_BigInt *this, w_BigInt *other, w_BigInt *result)
 {
     w_assert(this != NULL && other != NULL && result != NULL);
@@ -2629,7 +2758,13 @@ static inline void w_BigInt_or(w_BigInt *this, w_BigInt *other, w_BigInt *result
     w_BigInt_deinit(&otherTemp);
 }
 
-// 按位异或
+/**
+ * 按位异或
+ * @param this
+ * @param other
+ * @param result result = this ^ other
+ * @return void
+ */
 static inline void w_BigInt_xor(w_BigInt *this, w_BigInt *other, w_BigInt *result)
 {
     w_assert(this != NULL && other != NULL && result != NULL);
@@ -2692,7 +2827,12 @@ static inline void w_BigInt_xor(w_BigInt *this, w_BigInt *other, w_BigInt *resul
     w_BigInt_deinit(&otherTemp);
 }
 
-// 按位取反
+/**
+ * 按位取反
+ * @param this
+ * @param result result = ~this
+ * @return void
+ */
 static inline void w_BigInt_not(w_BigInt *this, w_BigInt *result)
 {
     w_assert(this != NULL && result != NULL);
@@ -2741,7 +2881,13 @@ static inline void w_BigInt_not(w_BigInt *this, w_BigInt *result)
     w_BigInt_deinit(&temp);
 }
 
-// 左移位
+/**
+ * 左移位
+ * @param this
+ * @param n 移动的位数
+ * @param result result = this << n
+ * @return void
+ */
 static inline void w_BigInt_shiftLeft(w_BigInt *this, int64_t n, w_BigInt *result)
 {
     w_assert(this != NULL && result != NULL);
@@ -2776,7 +2922,13 @@ static inline void w_BigInt_shiftLeft(w_BigInt *this, int64_t n, w_BigInt *resul
     }
 }
 
-// 右移位
+/**
+ * 右移位
+ * @param this
+ * @param n 移动的位数
+ * @param result result = this >> n
+ * @return void
+ */
 static inline void w_BigInt_shiftRight(w_BigInt *this, int64_t n, w_BigInt *result)
 {
     w_assert(this != NULL && result != NULL);
@@ -2815,7 +2967,12 @@ static inline void w_BigInt_shiftRight(w_BigInt *this, int64_t n, w_BigInt *resu
     }
 }
 
-// 取 bit 位，返回 0 或 1
+/**
+ * 取 bit 位
+ * @param this
+ * @param bitIndex 位索引
+ * @return int8_t 返回 0 或 1
+ */
 static inline int8_t w_BigInt_bitAt(w_BigInt *this, int64_t bitIndex)
 {
     w_assert(this != NULL);
