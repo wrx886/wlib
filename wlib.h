@@ -2803,8 +2803,8 @@ static inline void w_BigInt_shiftRight(w_BigInt *this, int64_t n, w_BigInt *resu
     {
         w_List_removeLast(w_BigInt_BitType_)(&(result->nums));
     }
-    // -1 >> n 的值位 -1
-    if (w_List_size(w_BigInt_BitType_)(&(result->nums)) == 0 && result->signum == -1)
+    // 负数 >> n 时，结果为负数，当 n 足够大时，结果一定为 -1
+    if (w_List_size(w_BigInt_BitType_)(&(result->nums)) == 0 && result->signum < 0)
     {
         w_List_addLast(w_BigInt_BitType_)(&(result->nums), 1);
     }
