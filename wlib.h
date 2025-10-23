@@ -2741,4 +2741,91 @@ static inline void w_BigInt_not(w_BigInt *this, w_BigInt *result)
     w_BigInt_deinit(&temp);
 }
 
+// 左移位
+static inline void w_BigInt_shiftLeft(w_BigInt *this, int64_t n, w_BigInt *result)
+{
+    w_assert(this != NULL && result != NULL);
+    w_assert(this != result);
+    // 赋值
+    w_BigInt_copyTo(this, result);
+    // 插入
+    for (int64_t i = 0; i < n / 8; i++)
+    {
+        w_List_addFirst(w_BigInt_BitType_)(&(result->nums), 0);
+    }
+    // 移位
+    int64_t bits = n % 8;
+    if (bits > 0)
+    {
+        w_List_addLast(w_BigInt_BitType_)(&(result->nums), 0);
+        for (int64_t i = w_List_size(w_BigInt_BitType_)(&(result->nums)) - 1; i > 0; i--)
+        {
+            w_List_set(w_BigInt_BitType_)(&(result->nums), i, (w_List_get(w_BigInt_BitType_)(&(result->nums), i) << bits) | (w_List_get(w_BigInt_BitType_)(&(result->nums), i - 1) >> (8 - bits)));
+        }
+        w_List_set(w_BigInt_BitType_)(&(result->nums), 0, w_List_get(w_BigInt_BitType_)(&(result->nums), 0) << bits);
+    }
+    // 去除多余的 0
+    while (w_List_size(w_BigInt_BitType_)(&(result->nums)) > 0 && w_List_get(w_BigInt_BitType_)(&(result->nums), w_List_size(w_BigInt_BitType_)(&(result->nums)) - 1) == 0)
+    {
+        w_List_removeLast(w_BigInt_BitType_)(&(result->nums));
+    }
+    // 表示 0 时候，nums 为空且 signum 为 0
+    if (w_List_size(w_BigInt_BitType_)(&(result->nums)) == 0)
+    {
+        result->signum = 0;
+    }
+}
+
+// 右移位
+static inline void w_BigInt_shiftRight(w_BigInt *this, int64_t n, w_BigInt *result)
+{
+    w_assert(this != NULL && result != NULL);
+    w_assert(this != result);
+    // 赋值
+    w_BigInt_copyTo(this, result);
+    // 删除
+    for (int64_t i = 0; i < n / 8 && w_List_size(w_BigInt_BitType_)(&(result->nums)) > 0; i++)
+    {
+        w_List_removeFirst(w_BigInt_BitType_)(&(result->nums));
+    }
+    // 移位
+    int64_t bits = n % 8;
+    if (w_List_size(w_BigInt_BitType_)(&(result->nums)) > 0 && bits > 0)
+    {
+        for (int64_t i = 0; i < (w_List_size(w_BigInt_BitType_)(&(result->nums)) - 1) * 8; i++)
+        {
+            w_List_set(w_BigInt_BitType_)(&(result->nums), i, (w_List_get(w_BigInt_BitType_)(&(result->nums), i) >> bits) | (w_List_get(w_BigInt_BitType_)(&(result->nums), i + 1) << (8 - bits)));
+        }
+        w_List_set(w_BigInt_BitType_)(&(result->nums), w_List_size(w_BigInt_BitType_)(&(result->nums)) - 1, w_List_get(w_BigInt_BitType_)(&(result->nums), w_List_size(w_BigInt_BitType_)(&(result->nums)) - 1) >> bits);
+    }
+    // 去除多余的 0
+    while (w_List_size(w_BigInt_BitType_)(&(result->nums)) > 0 && w_List_get(w_BigInt_BitType_)(&(result->nums), w_List_size(w_BigInt_BitType_)(&(result->nums)) - 1) == 0)
+    {
+        w_List_removeLast(w_BigInt_BitType_)(&(result->nums));
+    }
+    // -1 >> n 的值位 -1
+    if (w_List_size(w_BigInt_BitType_)(&(result->nums)) == 0 && result->signum == -1)
+    {
+        w_List_addLast(w_BigInt_BitType_)(&(result->nums), 1);
+    }
+    // 表示 0 时候，nums 为空且 signum 为 0
+    if (w_List_size(w_BigInt_BitType_)(&(result->nums)) == 0)
+    {
+        result->signum = 0;
+    }
+}
+
+// 取 bit 位，返回 0 或 1
+static inline int8_t w_BigInt_bitAt(w_BigInt *this, int64_t bitIndex)
+{
+    w_assert(this != NULL);
+    w_assert(bitIndex >= 0);
+    // 获取 bitIndex 位的索引
+    int64_t index = bitIndex / 8;
+    // 获取 bitIndex 位的索引
+    int8_t bit = bitIndex % 8;
+    // 获取 bitIndex 位的值
+    return ((w_List_size(w_BigInt_BitType_)(&(this->nums)) > 0 ? w_List_get(w_BigInt_BitType_)(&(this->nums), index) : 0) >> bit) & 1;
+}
+
 #endif
