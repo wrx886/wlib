@@ -43,6 +43,7 @@ int main() {
 - **Map**: 哈希映射
 - **Set**: 哈希集合
 - **StringBuilder**: 字符串构建器
+- **BigInt**: 大整数
 
 ## 内存管理
 
