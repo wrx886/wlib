@@ -2429,4 +2429,22 @@ static inline void w_BigInt_gcd(w_BigInt *this, w_BigInt *other, w_BigInt *resul
     w_BigInt_deinit(&otherTemp);
 }
 
+// abs
+static inline void w_BigInt_abs(w_BigInt *this, w_BigInt *result)
+{
+    w_assert(this != NULL && result != NULL);
+    w_assert(this != result);
+    w_BigInt_copyTo(this, result);
+    result->signum = result->signum != 0 ? 1 : 0;
+}
+
+// negate
+static inline void w_BigInt_negate(w_BigInt *this, w_BigInt *result)
+{
+    w_assert(this != NULL && result != NULL);
+    w_assert(this != result);
+    w_BigInt_copyTo(this, result);
+    result->signum = -result->signum;
+}
+
 #endif
