@@ -1351,7 +1351,7 @@ static inline void w_StringBuilder_deinit(w_StringBuilder *this)
 /**
  * 获取大小
  * @param this
- * @return int64_t
+ * @return int64_t 这个大小是不包含 '\0' 字符的
  */
 static inline int64_t w_StringBuilder_size(w_StringBuilder *this)
 {
@@ -1373,7 +1373,7 @@ static inline int64_t w_StringBuilder_capacity(w_StringBuilder *this)
 /**
  * 写入到 C 字符串
  * @param this
- * @param buffer 要被写入的缓冲区
+ * @param buffer 要被写入的缓冲区（注意：buffer 的大小应该是 size + 1，因为要留一个位置给 '\0'）
  * @return void
  */
 static inline void w_StringBuilder_toChars(w_StringBuilder *this, char *buffer)
