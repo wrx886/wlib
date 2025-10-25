@@ -3129,8 +3129,8 @@ static inline int8_t w_BigInt_bitAt(w_BigInt *this, int64_t bitIndex)
         if (end < 0)                                                 \
         {                                                            \
             end = this->capacity - 1;                                \
-            *result = this->elementData[end];                        \
         }                                                            \
+        *result = this->elementData[end];                            \
         this->end = end;                                             \
     }
 
