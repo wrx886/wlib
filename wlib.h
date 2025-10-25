@@ -3035,38 +3035,39 @@ static inline int8_t w_BigInt_bitAt(w_BigInt *this, int64_t bitIndex)
 
 // Deque 扩容
 #define w_Deque_expand_(T) w_concat(w_Deque(T), _expand_)
-#define w_Deque_expand_define_(T)                                                                  \
-    /**                                                                                            \
-     * 扩容                                                                                      \
-     * @param this                                                                                 \
-     * @return void                                                                                \
-     */                                                                                            \
-    static inline void w_Deque_expand_(T)(w_Deque(T) * this)                                       \
-    {                                                                                              \
-        w_assert(this != NULL);                                                                    \
-        w_assert(this->elementData != NULL);                                                       \
-        /* 扩容 */                                                                                 \
-        T *newElementData = w_malloc(sizeof(T) * this->capacity * 2);                              \
-        /* 拷贝数据 */                                                                             \
-        if (this->begin <= this->end)                                                              \
-        {                                                                                          \
-            /* 不涉及跨越问题，直接拷贝即可 */                                                     \
-            memcpy(newElementData, this->elementData + this->begin, this->end - this->begin);      \
-        }                                                                                          \
-        else                                                                                       \
-        {                                                                                          \
-            /* 跨越问题 */                                                                         \
-            /* begin -> eof */                                                                     \
-            memcpy(newElementData, this->elementData + this->begin, this->capacity - this->begin); \
-            /* 0 -> end */                                                                         \
-            memcpy(newElementData + this->capacity - this->begin, this->elementData, this->end);   \
-        }                                                                                          \
-        /* 释放旧数据 */                                                                           \
-        w_free(this->elementData);                                                                 \
-        this->elementData = newElementData;                                                        \
-        this->capacity *= 2;                                                                       \
-        this->end = this->capacity - this->begin + this->end;                                      \
-        this->begin = 0;                                                                           \
+#define w_Deque_expand_define_(T)                                                                                  \
+    /**                                                                                                            \
+     * 扩容                                                                                                      \
+     * @param this                                                                                                 \
+     * @return void                                                                                                \
+     */                                                                                                            \
+    static inline void w_Deque_expand_(T)(w_Deque(T) * this)                                                       \
+    {                                                                                                              \
+        w_assert(this != NULL);                                                                                    \
+        w_assert(this->elementData != NULL);                                                                       \
+        /* 扩容 */                                                                                                 \
+        T *newElementData = w_malloc(sizeof(T) * this->capacity * 2);                                              \
+        w_assert(newElementData != NULL);                                                                          \
+        /* 拷贝数据 */                                                                                             \
+        if (this->begin <= this->end)                                                                              \
+        {                                                                                                          \
+            /* 不涉及跨越问题，直接拷贝即可 */                                                                     \
+            memcpy(newElementData, this->elementData + this->begin, (this->end - this->begin) * sizeof(T));        \
+        }                                                                                                          \
+        else                                                                                                       \
+        {                                                                                                          \
+            /* 跨越问题 */                                                                                         \
+            /* begin -> eof */                                                                                     \
+            memcpy(newElementData, this->elementData + this->begin, this->capacity - this->begin);                 \
+            /* 0 -> end */                                                                                         \
+            memcpy(newElementData + this->capacity - this->begin, this->elementData, this->end);                   \
+        }                                                                                                          \
+        /* 释放旧数据 */                                                                                           \
+        w_free(this->elementData);                                                                                 \
+        this->elementData = newElementData;                                                                        \
+        this->end = this->end >= this->begin ? this->end - this->begin : this->capacity - this->begin + this->end; \
+        this->begin = 0;                                                                                           \
+        this->capacity *= 2;                                                                                       \
     }
 
 // Deque 元素个数
