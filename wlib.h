@@ -1381,7 +1381,7 @@ static inline void w_StringBuilder_toChars(w_StringBuilder *this, char *buffer)
     w_assert(this != NULL);
     w_assert(buffer != NULL);
     int64_t size = w_StringBuilder_size(this);
-    memcpy(buffer, w_List_data(w_StringBuilder_ValueType_)(&(this->list)), size);
+    memcpy(buffer, w_List_data(w_StringBuilder_ValueType_)(&(this->list)), size * sizeof(w_StringBuilder_ValueType_));
     buffer[size] = '\0';
 }
 
@@ -3060,9 +3060,9 @@ static inline int8_t w_BigInt_bitAt(w_BigInt *this, int64_t bitIndex)
         {                                                                                                          \
             /* 跨越问题 */                                                                                         \
             /* begin -> eof */                                                                                     \
-            memcpy(newElementData, this->elementData + this->begin, this->capacity - this->begin);                 \
+            memcpy(newElementData, this->elementData + this->begin, (this->capacity - this->begin) * sizeof(T));   \
             /* 0 -> end */                                                                                         \
-            memcpy(newElementData + this->capacity - this->begin, this->elementData, this->end);                   \
+            memcpy(newElementData + this->capacity - this->begin, this->elementData, (this->end) * sizeof(T));     \
         }                                                                                                          \
         /* 释放旧数据 */                                                                                           \
         w_free(this->elementData);                                                                                 \
