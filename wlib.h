@@ -2985,4 +2985,240 @@ static inline int8_t w_BigInt_bitAt(w_BigInt *this, int64_t bitIndex)
     return ((index < w_List_size(w_BigInt_BitType_)(&(this->nums)) ? w_List_get(w_BigInt_BitType_)(&(this->nums), index) : 0) >> bit) & 1;
 }
 
+// ========================================================================================================================================================
+//  Deque
+// ========================================================================================================================================================
+
+// Deque 类型定义
+#define w_Deque(T) w_concat(w_Deque_, T)
+#define w_Deque_type_define_(T)                              \
+    typedef struct                                           \
+    {                                                        \
+        T *elementData;   /* 元素数据 */                     \
+        int64_t capacity; /* 容量，会少用一个以区分空和满 */ \
+        int64_t begin;    /* 起始位置 */                     \
+        int64_t end;      /* 终止位置的下一位 */             \
+    } w_Deque(T);
+
+// Deque 初始化
+#define w_Deque_init(T) w_concat(w_Deque(T), _init)
+#define w_Deque_init_define_(T)                           \
+    /**                                                   \
+     * 初始化                                          \
+     * @param this                                        \
+     * @return void                                       \
+     */                                                   \
+    static inline void w_Deque_init(T)(w_Deque(T) * this) \
+    {                                                     \
+        w_assert(this != NULL);                           \
+        this->elementData = w_malloc(sizeof(T) * 16);     \
+        this->capacity = 16;                              \
+        this->begin = 0;                                  \
+        this->end = 0;                                    \
+    }
+
+// Deque 释放
+#define w_Deque_deinit(T) w_concat(w_Deque(T), _deinit)
+#define w_Deque_deinit_define_(T)                           \
+    /**                                                     \
+     * 释放                                               \
+     * @param this                                          \
+     * @return void                                         \
+     */                                                     \
+    static inline void w_Deque_deinit(T)(w_Deque(T) * this) \
+    {                                                       \
+        w_assert(this != NULL);                             \
+        w_assert(this->elementData != NULL);                \
+        w_free(this->elementData);                          \
+        memset(this, 0, sizeof(w_Deque(T)));                \
+    }
+
+// Deque 扩容
+#define w_Deque_expand_(T) w_concat(w_Deque(T), _expand_)
+#define w_Deque_expand_define_(T)                                                                  \
+    /**                                                                                            \
+     * 扩容                                                                                      \
+     * @param this                                                                                 \
+     * @return void                                                                                \
+     */                                                                                            \
+    static inline void w_Deque_expand_(T)(w_Deque(T) * this)                                       \
+    {                                                                                              \
+        w_assert(this != NULL);                                                                    \
+        w_assert(this->elementData != NULL);                                                       \
+        /* 扩容 */                                                                                 \
+        T *newElementData = w_malloc(sizeof(T) * this->capacity * 2);                              \
+        /* 拷贝数据 */                                                                             \
+        if (this->begin <= this->end)                                                              \
+        {                                                                                          \
+            /* 不涉及跨越问题，直接拷贝即可 */                                                     \
+            memcpy(newElementData, this->elementData + this->begin, this->end - this->begin);      \
+        }                                                                                          \
+        else                                                                                       \
+        {                                                                                          \
+            /* 跨越问题 */                                                                         \
+            /* begin -> eof */                                                                     \
+            memcpy(newElementData, this->elementData + this->begin, this->capacity - this->begin); \
+            /* 0 -> end */                                                                         \
+            memcpy(newElementData + this->capacity - this->begin, this->elementData, this->end);   \
+        }                                                                                          \
+        /* 释放旧数据 */                                                                           \
+        w_free(this->elementData);                                                                 \
+        this->elementData = newElementData;                                                        \
+        this->capacity *= 2;                                                                       \
+        this->end = this->capacity - this->begin + this->end;                                      \
+        this->begin = 0;                                                                           \
+    }
+
+// Deque 元素个数
+#define w_Deque_size(T) w_concat(w_Deque(T), _size)
+#define w_Deque_size_define_(T)                                                                               \
+    /**                                                                                                       \
+     * 元素个数                                                                                           \
+     * @param this                                                                                            \
+     * @return int64_t Deque 中的元素个数                                                               \
+     */                                                                                                       \
+    static inline int64_t w_Deque_size(T)(w_Deque(T) * this)                                                  \
+    {                                                                                                         \
+        w_assert(this != NULL);                                                                               \
+        w_assert(this->elementData != NULL);                                                                  \
+        return this->end >= this->begin ? this->end - this->begin : this->capacity - this->begin + this->end; \
+    }
+
+// 入栈
+#define w_Deque_push(T) w_concat(w_Deque(T), _push)
+#define w_Deque_push_define_(T)                                      \
+    /**                                                              \
+     * 入栈                                                        \
+     * @param this                                                   \
+     * @param element 入栈元素                                   \
+     * @return void                                                  \
+     */                                                              \
+    static inline void w_Deque_push(T)(w_Deque(T) * this, T element) \
+    {                                                                \
+        w_assert(this != NULL);                                      \
+        w_assert(this->elementData != NULL);                         \
+        /* 判断是否扩容 */                                           \
+        if (w_Deque_size(T)(this) >= this->capacity - 1)             \
+        {                                                            \
+            w_Deque_expand_(T)(this);                                \
+        }                                                            \
+        /* 推入栈 */                                                 \
+        this->elementData[this->end] = element;                      \
+        this->end = (this->end + 1) % this->capacity;                \
+    }
+
+// 出栈
+#define w_Deque_pop(T) w_concat(w_Deque(T), _pop)
+#define w_Deque_pop_define_(T)                                       \
+    /**                                                              \
+     * 出栈                                                        \
+     * @param this                                                   \
+     * @param result 出栈元素                                    \
+     * @return void                                                  \
+     */                                                              \
+    static inline void w_Deque_pop(T)(w_Deque(T) * this, T * result) \
+    {                                                                \
+        w_assert(this != NULL);                                      \
+        w_assert(this->elementData != NULL);                         \
+        w_assert(w_Deque_size(T)(this) > 0); /* 栈非空 */            \
+        /* 出栈 */                                                   \
+        int64_t end = this->end - 1;                                 \
+        if (end < 0)                                                 \
+        {                                                            \
+            end = this->capacity - 1;                                \
+            *result = this->elementData[end];                        \
+        }                                                            \
+        this->end = end;                                             \
+    }
+
+// 入队
+#define w_Deque_enqueue(T) w_concat(w_Deque(T), _enqueue)
+#define w_Deque_enqueue_define_(T)                                      \
+    /**                                                                 \
+     * 入队                                                           \
+     * @param this                                                      \
+     * @param element 入队元素                                      \
+     * @return void                                                     \
+     */                                                                 \
+    static inline void w_Deque_enqueue(T)(w_Deque(T) * this, T element) \
+    {                                                                   \
+        w_assert(this != NULL);                                         \
+        w_assert(this->elementData != NULL);                            \
+        /* 扩容 */                                                      \
+        if (w_Deque_size(T)(this) >= this->capacity - 1)                \
+        {                                                               \
+            w_Deque_expand_(T)(this);                                   \
+        }                                                               \
+        /* 入队 */                                                      \
+        this->elementData[this->end] = element;                         \
+        this->end = (this->end + 1) % this->capacity;                   \
+    }
+
+// 出队
+#define w_Deque_dequeue(T) w_concat(w_Deque(T), _dequeue)
+#define w_Deque_dequeue_define_(T)                                       \
+    /**                                                                  \
+     * 出队                                                            \
+     * @param this                                                       \
+     * @param result 出队元素                                        \
+     * @return void                                                      \
+     */                                                                  \
+    static inline void w_Deque_dequeue(T)(w_Deque(T) * this, T * result) \
+    {                                                                    \
+        w_assert(this != NULL);                                          \
+        w_assert(this->elementData != NULL);                             \
+        w_assert(w_Deque_size(T)(this) > 0);                             \
+        /* 出队 */                                                       \
+        *result = this->elementData[this->begin];                        \
+        this->begin = (this->begin + 1) % this->capacity;                \
+    }
+
+// 根据索引获取元素
+#define w_Deque_get(T) w_concat(w_Deque(T), _get)
+#define w_Deque_get_define_(T)                                                     \
+    /**                                                                            \
+     * 根据索引获取元素                                                    \
+     * @param this                                                                 \
+     * @param index 索引                                                         \
+     * @param result 获取的元素                                               \
+     */                                                                            \
+    static inline void w_Deque_get(T)(w_Deque(T) * this, int64_t index, T *result) \
+    {                                                                              \
+        w_assert(this != NULL && this->elementData != NULL);                       \
+        w_assert(index >= 0 && index < w_Deque_size(T)(this));                     \
+        index = (this->begin + index) % this->capacity;                            \
+        *result = this->elementData[index];                                        \
+    }
+
+// 根据索引设置元素
+#define w_Deque_set(T) w_concat(w_Deque(T), _set)
+#define w_Deque_set_define_(T)                                                     \
+    /**                                                                            \
+     * 根据索引设置元素                                                    \
+     * @param this                                                                 \
+     * @param index 索引                                                         \
+     * @param element 设置的元素                                              \
+     */                                                                            \
+    static inline void w_Deque_set(T)(w_Deque(T) * this, int64_t index, T element) \
+    {                                                                              \
+        w_assert(this != NULL && this->elementData != NULL);                       \
+        w_assert(index >= 0 && index < w_Deque_size(T)(this));                     \
+        index = (this->begin + index) % this->capacity;                            \
+        this->elementData[index] = element;                                        \
+    }
+
+// Deque 定义
+#define w_Deque_define(T)       \
+    w_Deque_type_define_(T);    \
+    w_Deque_init_define_(T);    \
+    w_Deque_deinit_define_(T);  \
+    w_Deque_expand_define_(T);  \
+    w_Deque_size_define_(T);    \
+    w_Deque_push_define_(T);    \
+    w_Deque_pop_define_(T);     \
+    w_Deque_enqueue_define_(T); \
+    w_Deque_dequeue_define_(T); \
+    w_Deque_get_define_(T);     \
+    w_Deque_set_define_(T);
+
 #endif
