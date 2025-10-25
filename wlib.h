@@ -1741,6 +1741,7 @@ static inline int64_t w_StringBuilder_indexOfWithFromIndex(w_StringBuilder *this
     int64_t valueLen = strlen(value);
     // 构建 next 数组
     int64_t *next = w_malloc(sizeof(int64_t) * valueLen);
+    w_assert(next != NULL);
     next[0] = -1;
     int i = -1, j = 1;
     while (j < valueLen - 1)
@@ -3012,6 +3013,7 @@ static inline int8_t w_BigInt_bitAt(w_BigInt *this, int64_t bitIndex)
     {                                                     \
         w_assert(this != NULL);                           \
         this->elementData = w_malloc(sizeof(T) * 16);     \
+        w_assert(this->elementData != NULL);              \
         this->capacity = 16;                              \
         this->begin = 0;                                  \
         this->end = 0;                                    \
