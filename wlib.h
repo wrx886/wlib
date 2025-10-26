@@ -1389,9 +1389,9 @@ static inline void w_StringBuilder_toChars(w_StringBuilder *this, char *buffer)
 /**
  * 获取数据
  * @param this
- * @return const char * 返回 C 字符串（慎用，该位置在添加数据后可能被释放）
+ * @return char * 返回 C 字符串（慎用，该位置在添加数据后可能被释放）
  */
-static inline const char *w_StringBuilder_data(w_StringBuilder *this)
+static inline char *w_StringBuilder_data(w_StringBuilder *this)
 {
     w_assert(this != NULL);
     return w_List_data(w_StringBuilder_ValueType_)(&(this->list));
