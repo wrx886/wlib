@@ -44,6 +44,7 @@ int main() {
 - **Set**: 哈希集合
 - **StringBuilder**: 字符串构建器
 - **BigInt**: 大整数
+- **Deque**: 双端队列
 
 ## 内存管理
 
