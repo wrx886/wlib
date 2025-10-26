@@ -1562,6 +1562,31 @@ static inline void w_StringBuilder_insertInt(w_StringBuilder *this, int64_t inde
 }
 
 /**
+ * 将 StringBuilder 的子序列插入到此序列
+ * @param this
+ * @param index 索引
+ * @param value 要插入的字符串
+ * @param offset 子序列的起始索引
+ * @param len 子序列的长度
+ * @return void
+ */
+static inline void w_StringBuilder_insertSubStringBuilder(w_StringBuilder *this, int64_t index, w_StringBuilder *value, int64_t offset, int64_t len)
+{
+    w_StringBuilder_insertSubChars(this, index, w_StringBuilder_data(value), offset, len);
+}
+
+/**
+ * 将 StringBuilder 插入到此序列
+ * @param this
+ * @param value 要追加的字符串
+ * @return void
+ */
+static inline void w_StringBuilder_insertStringBuilder(w_StringBuilder *this, int64_t index, w_StringBuilder *value)
+{
+    w_StringBuilder_insertSubStringBuilder(this, index, value, 0, w_StringBuilder_size(value));
+}
+
+/**
  * 将 char 追加到此序列
  * @param this
  * @param value 要追加的 char 值
@@ -1649,6 +1674,30 @@ static inline void w_StringBuilder_appendLong(w_StringBuilder *this, int64_t val
 static inline void w_StringBuilder_appendInt(w_StringBuilder *this, int value)
 {
     w_StringBuilder_insertInt(this, w_StringBuilder_size(this), value);
+}
+
+/**
+ * 将 StringBuilder 的子序列追加到此序列
+ * @param this
+ * @param value 要追加的字符串
+ * @param offset 子序列的起始索引
+ * @param len 子序列的长度
+ * @return void
+ */
+static inline void w_StringBuilder_appendSubStringBuilder(w_StringBuilder *this, w_StringBuilder *value, int64_t offset, int64_t len)
+{
+    w_StringBuilder_insertSubStringBuilder(this, w_StringBuilder_size(this), value, offset, len);
+}
+
+/**
+ * 追加 StringBuilder 到此序列
+ * @param this
+ * @param value 要追加的 StringBuilder
+ * @return void
+ */
+static inline void w_StringBuilder_appendStringBuilder(w_StringBuilder *this, w_StringBuilder *value)
+{
+    w_StringBuilder_insertStringBuilder(this, w_StringBuilder_size(this), value);
 }
 
 /**
