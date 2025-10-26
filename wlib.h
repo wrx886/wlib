@@ -1335,6 +1335,7 @@ static inline void w_StringBuilder_init(w_StringBuilder *this)
 {
     w_assert(this != NULL);
     w_List_init(w_StringBuilder_ValueType_)(&(this->list));
+    w_List_addLast(w_StringBuilder_ValueType_)(&(this->list), '\0');
 }
 
 /**
@@ -1356,7 +1357,7 @@ static inline void w_StringBuilder_deinit(w_StringBuilder *this)
 static inline int64_t w_StringBuilder_size(w_StringBuilder *this)
 {
     w_assert(this != NULL);
-    return w_List_size(w_StringBuilder_ValueType_)(&(this->list));
+    return w_List_size(w_StringBuilder_ValueType_)(&(this->list)) - 1;
 }
 
 /**
@@ -1383,6 +1384,17 @@ static inline void w_StringBuilder_toChars(w_StringBuilder *this, char *buffer)
     int64_t size = w_StringBuilder_size(this);
     memcpy(buffer, w_List_data(w_StringBuilder_ValueType_)(&(this->list)), size * sizeof(w_StringBuilder_ValueType_));
     buffer[size] = '\0';
+}
+
+/**
+ * 获取数据
+ * @param this
+ * @return const char * 返回 C 字符串（慎用，该位置在添加数据后可能被释放）
+ */
+static inline const char *w_StringBuilder_data(w_StringBuilder *this)
+{
+    w_assert(this != NULL);
+    return w_List_data(w_StringBuilder_ValueType_)(&(this->list));
 }
 
 /**
@@ -1413,6 +1425,7 @@ static inline void w_StringBuilder_reverse(w_StringBuilder *this)
 static inline char w_StringBuilder_charAt(w_StringBuilder *this, int64_t index)
 {
     w_assert(this != NULL);
+    w_assert(index >= 0 && index < w_StringBuilder_size(this));
     return w_List_get(w_StringBuilder_ValueType_)(&(this->list), index);
 }
 
@@ -1426,6 +1439,7 @@ static inline char w_StringBuilder_charAt(w_StringBuilder *this, int64_t index)
 static inline void w_StringBuilder_setCharAt(w_StringBuilder *this, int64_t index, char value)
 {
     w_assert(this != NULL);
+    w_assert(index >= 0 && index < w_StringBuilder_size(this));
     w_List_set(w_StringBuilder_ValueType_)(&(this->list), index, value);
 }
 
@@ -1440,6 +1454,7 @@ static inline void w_StringBuilder_insertChar(w_StringBuilder *this, int64_t ind
 {
     // 断言
     w_assert(this != NULL);
+    w_assert(index >= 0 && index <= w_StringBuilder_size(this));
     // 插入
     w_List_add(w_StringBuilder_ValueType_)(&(this->list), index, value);
 }
