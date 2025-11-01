@@ -3189,6 +3189,7 @@ static inline int8_t w_BigInt_bitAt(w_BigInt *this, int64_t bitIndex)
         w_assert(this != NULL);                                      \
         w_assert(this->elementData != NULL);                         \
         w_assert(w_Deque_size(T)(this) > 0); /* 栈非空 */            \
+        w_assert(result != NULL);                                    \
         /* 出栈 */                                                   \
         int64_t end = this->end - 1;                                 \
         if (end < 0)                                                 \
@@ -3236,6 +3237,7 @@ static inline int8_t w_BigInt_bitAt(w_BigInt *this, int64_t bitIndex)
         w_assert(this != NULL);                                          \
         w_assert(this->elementData != NULL);                             \
         w_assert(w_Deque_size(T)(this) > 0);                             \
+        w_assert(result != NULL);                                        \
         /* 出队 */                                                       \
         *result = this->elementData[this->begin];                        \
         this->begin = (this->begin + 1) % this->capacity;                \
@@ -3254,6 +3256,7 @@ static inline int8_t w_BigInt_bitAt(w_BigInt *this, int64_t bitIndex)
     {                                                                              \
         w_assert(this != NULL && this->elementData != NULL);                       \
         w_assert(index >= 0 && index < w_Deque_size(T)(this));                     \
+        w_assert(result != NULL);                                                  \
         index = (this->begin + index) % this->capacity;                            \
         *result = this->elementData[index];                                        \
     }
