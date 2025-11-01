@@ -3382,4 +3382,13 @@ static inline int8_t w_BigInt_bitAt(w_BigInt *this, int64_t bitIndex)
         return size;                                                         \
     }
 
+// 阻塞队列定义
+#define w_BlockingQueue_define(T)      \
+    w_BlockingQueue_type_define_(T);   \
+    w_BlockingQueue_init_define_(T);   \
+    w_BlockingQueue_deinit_define_(T); \
+    w_BlockingQueue_take_define_(T);   \
+    w_BlockingQueue_put_define_(T);    \
+    w_BlockingQueue_size_define_(T);
+
 #endif
