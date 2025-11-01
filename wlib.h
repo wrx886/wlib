@@ -3290,10 +3290,10 @@ static inline int8_t w_BigInt_bitAt(w_BigInt *this, int64_t bitIndex)
     w_Deque_set_define_(T);
 
 // ========================================================================================================================================================
-//  阻塞 Deque
+//  阻塞队列
 // ========================================================================================================================================================
 
-// 阻塞 Deque 定义，需要先行定义 w_Deque
+// 阻塞队列定义，需要先行定义 w_Deque
 #define w_BlockingQueue(T) w_concat(w_BlockingQueue_, T)
 #define w_BlockingQueue_type_define_(T)          \
     typedef struct                               \
@@ -3306,6 +3306,11 @@ static inline int8_t w_BigInt_bitAt(w_BigInt *this, int64_t bitIndex)
 // 初始化
 #define w_BlockingQueue_init(T) w_concat(w_BlockingQueue(T), _init)
 #define w_BlockingQueue_init_define_(T)                                   \
+    /**                                                                   \
+     * 阻塞队列初始化                                              \
+     * @param this                                                        \
+     * @return void                                                       \
+     */                                                                   \
     static inline void w_BlockingQueue_init(T)(w_BlockingQueue(T) * this) \
     {                                                                     \
         w_assert(this != NULL);                                           \
@@ -3317,6 +3322,11 @@ static inline int8_t w_BigInt_bitAt(w_BigInt *this, int64_t bitIndex)
 // 销毁
 #define w_BlockingQueue_deinit(T) w_concat(w_BlockingQueue(T), _deinit)
 #define w_BlockingQueue_deinit_define_(T)                                   \
+    /**                                                                     \
+     * 销毁                                                               \
+     * @param this                                                          \
+     * @return void                                                         \
+     */                                                                     \
     static inline void w_BlockingQueue_deinit(T)(w_BlockingQueue(T) * this) \
     {                                                                       \
         w_assert(this != NULL);                                             \
@@ -3326,9 +3336,15 @@ static inline int8_t w_BigInt_bitAt(w_BigInt *this, int64_t bitIndex)
         pthread_mutex_lock(&this->emptyMutex); /* 锁定 empty */             \
     }
 
-// take
+// 取出元素
 #define w_BlockingQueue_take(T) w_concat(w_BlockingQueue(T), _take)
 #define w_BlockingQueue_take_define_(T)                                               \
+    /**                                                                               \
+     * 取出元素                                                                   \
+     * @param this                                                                    \
+     * @param result 取出的元素                                                  \
+     * @return void                                                                   \
+     */                                                                               \
     static inline void w_BlockingQueue_take(T)(w_BlockingQueue(T) * this, T * result) \
     {                                                                                 \
         w_assert(this != NULL);                                                       \
@@ -3349,9 +3365,15 @@ static inline int8_t w_BigInt_bitAt(w_BigInt *this, int64_t bitIndex)
         pthread_mutex_unlock(&this->opMutex);                                         \
     }
 
-// put
+// 放入元素
 #define w_BlockingQueue_put(T) w_concat(w_BlockingQueue(T), _put)
 #define w_BlockingQueue_put_define_(T)                                              \
+    /**                                                                             \
+     * 放入元素                                                                 \
+     * @param this                                                                  \
+     * @param element 放入的元素                                               \
+     * @return void                                                                 \
+     */                                                                             \
     static inline void w_BlockingQueue_put(T)(w_BlockingQueue(T) * this, T element) \
     {                                                                               \
         w_assert(this != NULL);                                                     \
@@ -3368,9 +3390,14 @@ static inline int8_t w_BigInt_bitAt(w_BigInt *this, int64_t bitIndex)
         pthread_mutex_unlock(&this->opMutex);                                       \
     }
 
-// size
+// 队列大小
 #define w_BlockingQueue_size(T) w_concat(w_BlockingQueue(T), _size)
 #define w_BlockingQueue_size_define_(T)                                      \
+    /**                                                                      \
+     * 获取队列大小                                                    \
+     * @param this                                                           \
+     * @return int64_t 队列大小                                          \
+     */                                                                      \
     static inline int64_t w_BlockingQueue_size(T)(w_BlockingQueue(T) * this) \
     {                                                                        \
         w_assert(this != NULL);                                              \
