@@ -48,6 +48,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdarg.h>
+#include <pthread.h> // 引入 pthread 库
 
 // 统一内存的申请和释放
 #define w_malloc(size) malloc(size)
