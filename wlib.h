@@ -3291,4 +3291,135 @@ static inline int8_t w_BigInt_bitAt(w_BigInt *this, int64_t bitIndex)
     w_Deque_get_define_(T);     \
     w_Deque_set_define_(T);
 
+// ========================================================================================================================================================
+//  堆（小根堆）
+// ========================================================================================================================================================
+
+// 堆的类型定义（依赖于 Deque，所以要先行定义类型对应的 Deque）
+#define w_Heap(T) w_concat(w_Heap_, T)
+#define w_Heap_type_define_(T) \
+    typedef struct             \
+    {                          \
+        w_Deque(T) deque;      \
+    } w_Heap(T);
+
+// 堆的初始化
+#define w_Heap_init(T) w_concat(w_Heap(T), _init)
+#define w_Heap_init_define_(T)                          \
+    static inline void w_Heap_init(T)(w_Heap(T) * this) \
+    {                                                   \
+        w_assert(this != NULL);                         \
+        w_Deque_init(T)(&(this->deque));                \
+    }
+
+// 堆的销毁
+#define w_Heap_deinit(T) w_concat(w_Heap(T), _deinit)
+#define w_Heap_deinit_define_(T)                          \
+    static inline void w_Heap_deinit(T)(w_Heap(T) * this) \
+    {                                                     \
+        w_assert(this != NULL);                           \
+        w_Deque_deinit(T)(&(this->deque));                \
+    }
+
+// 堆的调整（小根堆）
+#define w_Heap_adjust_(T) w_concat(w_Heap(T), _adjust_)
+#define w_Heap_adjust_define_(T)                                                                  \
+    static inline void w_Heap_adjust_(T)(w_Heap(T) * this, int64_t root)                          \
+    {                                                                                             \
+        w_assert(this != NULL);                                                                   \
+        int64_t size = w_Deque_size(T)(&(this->deque));                                           \
+        if (size == 0)                                                                            \
+        {                                                                                         \
+            /* 空堆 */                                                                            \
+            return;                                                                               \
+        }                                                                                         \
+        w_assert(size > 0 && root >= 0 && root < size);                                           \
+        while (true)                                                                              \
+        {                                                                                         \
+            /* 1. 调整 */                                                                         \
+            int64_t left = 2 * root + 1;                                                          \
+            int64_t right = 2 * root + 2;                                                         \
+            int64_t min = root;                                                                   \
+            /* 2. 比较并找出最小子节点 */                                                         \
+            T rootElement, leftElement, rightElement;                                             \
+            w_Deque_get(T)(&(this->deque), root, &rootElement);                                   \
+            /* 2.1 检查左子节点 */                                                                \
+            if (left < size)                                                                      \
+            {                                                                                     \
+                w_Deque_get(T)(&(this->deque), left, &leftElement);                               \
+                if (w_compare(T)(&leftElement, &rootElement) < 0)                                 \
+                {                                                                                 \
+                    min = left;                                                                   \
+                }                                                                                 \
+            }                                                                                     \
+            /* 2.2 检查右子节点 */                                                                \
+            if (right < size)                                                                     \
+            {                                                                                     \
+                w_Deque_get(T)(&(this->deque), right, &rightElement);                             \
+                if (w_compare(T)(&rightElement, (min == left) ? &leftElement : &rootElement) < 0) \
+                {                                                                                 \
+                    min = right;                                                                  \
+                }                                                                                 \
+            }                                                                                     \
+            /* 3. 交换并下沉 */                                                                   \
+            if (min != root)                                                                      \
+            {                                                                                     \
+                if (min == left)                                                                  \
+                {                                                                                 \
+                    w_Deque_set(T)(&(this->deque), root, leftElement);                            \
+                }                                                                                 \
+                else                                                                              \
+                {                                                                                 \
+                    w_Deque_set(T)(&(this->deque), root, rightElement);                           \
+                }                                                                                 \
+                w_Deque_set(T)(&(this->deque), min, rootElement);                                 \
+                root = min;                                                                       \
+            }                                                                                     \
+            else                                                                                  \
+            {                                                                                     \
+                /* 调整结束 */                                                                    \
+                break;                                                                            \
+            }                                                                                     \
+        }                                                                                         \
+    }
+
+// 入堆
+#define w_Heap_push(T) w_concat(w_Heap(T), _push)
+#define w_Heap_push_define_(T)                                     \
+    static inline void w_Heap_push(T)(w_Heap(T) * this, T element) \
+    {                                                              \
+        w_assert(this != NULL);                                    \
+        w_Deque_enqueue(T)(&(this->deque), element);               \
+        w_Heap_adjust_(T)(this, 0);                                \
+    }
+
+// 出堆
+#define w_Heap_pop(T) w_concat(w_Heap(T), _pop)
+#define w_Heap_pop_define_(T)                                      \
+    static inline void w_Heap_pop(T)(w_Heap(T) * this, T * result) \
+    {                                                              \
+        w_assert(this != NULL);                                    \
+        w_Deque_pop(T)(&(this->deque), result);                    \
+        w_Heap_adjust_(T)(this, 0);                                \
+    }
+
+// 大小
+#define w_Heap_size(T) w_concat(w_Heap(T), _size)
+#define w_Heap_size_define_(T)                             \
+    static inline int64_t w_Heap_size(T)(w_Heap(T) * this) \
+    {                                                      \
+        w_assert(this != NULL);                            \
+        return w_Deque_size(T)(&(this->deque));            \
+    }
+
+// 堆的定义
+#define w_Heap_define(T)      \
+    w_Heap_type_define_(T);   \
+    w_Heap_init_define_(T);   \
+    w_Heap_deinit_define_(T); \
+    w_Heap_adjust_define_(T); \
+    w_Heap_push_define_(T);   \
+    w_Heap_pop_define_(T);    \
+    w_Heap_size_define_(T);
+
 #endif
