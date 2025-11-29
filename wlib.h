@@ -3442,7 +3442,7 @@ static inline int8_t w_BigInt_bitAt(w_BigInt *this, int64_t bitIndex)
     static inline void w_Heap_push(T)(w_Heap(T) * this, T element) \
     {                                                              \
         w_assert(this != NULL);                                    \
-        w_Deque_enqueue(T)(&(this->deque), element);               \
+        w_Deque_addFirst(T)(&(this->deque), element);              \
         w_Heap_adjust_(T)(this, 0);                                \
     }
 
@@ -3452,7 +3452,7 @@ static inline int8_t w_BigInt_bitAt(w_BigInt *this, int64_t bitIndex)
     static inline void w_Heap_pop(T)(w_Heap(T) * this, T * result) \
     {                                                              \
         w_assert(this != NULL);                                    \
-        w_Deque_pop(T)(&(this->deque), result);                    \
+        w_Deque_removeFirst(T)(&(this->deque), result);            \
         w_Heap_adjust_(T)(this, 0);                                \
     }
 
