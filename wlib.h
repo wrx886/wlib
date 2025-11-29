@@ -1249,8 +1249,7 @@ typedef struct
     static inline int64_t w_hash(T)(T * value) \
     {                                          \
         w_assert(value != NULL);               \
-        int64_t temp;                          \
-        memset(&temp, 0, sizeof(int64_t));     \
+        int64_t temp = 0;                      \
         memcpy(&temp, value, sizeof(T));       \
         return temp;                           \
     }
