@@ -4,13 +4,13 @@
 
 ## 快速开始
 
-1.  将 `wlib.h` 复制到您的项目中
-2.  在代码中包含头文件：
-    ```c
-    #include "wlib.h"
-    ```
-3.  使用前为需要的类型实例化模板（如 `w_Array_define(int);`）
-4.  确保编译器支持 C99（如使用 `-std=c99` 编译选项）
+1. 将 `wlib.h` 复制到您的项目中
+2. 在代码中包含头文件：
+   ```c
+   #include "wlib.h"
+   ```
+3. 使用前为需要的类型实例化模板（如 `w_Array_define(int);`）
+4. 确保编译器支持 C99（如使用 `-std=c99` 编译选项）
 
 ## 示例用法
 
@@ -24,11 +24,11 @@ w_Array_define(int);
 int main() {
     w_Array(int) arr;
     w_Array_init(int)(&arr, 5);
-    
+  
     // 使用数组...
     w_Array_set(int)(&arr, 0, 42);
     printf("%d\n", w_Array_get(int)(&arr, 0));
-    
+  
     w_Array_deinit(int)(&arr);
     return 0;
 }
@@ -37,14 +37,16 @@ int main() {
 ## 数据结构
 
 当前支持的数据结构包括：
+
 - **Array**: 固定大小数组
-- **NDArray**: 多维数组  
+- **NDArray**: 多维数组
 - **List**: 动态数组
 - **Map**: 哈希映射
 - **Set**: 哈希集合
 - **StringBuilder**: 字符串构建器
 - **BigInt**: 大整数
 - **Deque**: 双端队列
+- **Heap**：小根堆
 
 ## 内存管理
 
