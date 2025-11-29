@@ -1249,7 +1249,10 @@ typedef struct
     static inline int64_t w_hash(T)(T * value) \
     {                                          \
         w_assert(value != NULL);               \
-        return (int64_t)*value;                \
+        int64_t temp;                          \
+        memset(&temp, 0, sizeof(int64_t));     \
+        memcpy(&temp, value, sizeof(T));       \
+        return temp;                           \
     }
 
 // 数字类型比较函数
