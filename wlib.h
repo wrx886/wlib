@@ -3361,6 +3361,11 @@ static inline int8_t w_BigInt_bitAt(w_BigInt *this, int64_t bitIndex)
 // 堆的初始化
 #define w_Heap_init(T) w_concat(w_Heap(T), _init)
 #define w_Heap_init_define_(T)                          \
+    /**                                                 \
+     * 堆的初始化                                  \
+     * @param this 堆的指针                         \
+     * @return void                                     \
+     */                                                 \
     static inline void w_Heap_init(T)(w_Heap(T) * this) \
     {                                                   \
         w_assert(this != NULL);                         \
@@ -3370,6 +3375,11 @@ static inline int8_t w_BigInt_bitAt(w_BigInt *this, int64_t bitIndex)
 // 堆的销毁
 #define w_Heap_deinit(T) w_concat(w_Heap(T), _deinit)
 #define w_Heap_deinit_define_(T)                          \
+    /**                                                   \
+     * 堆的销毁                                       \
+     * @param this 堆的指针                           \
+     * @return void                                       \
+     */                                                   \
     static inline void w_Heap_deinit(T)(w_Heap(T) * this) \
     {                                                     \
         w_assert(this != NULL);                           \
@@ -3379,6 +3389,12 @@ static inline int8_t w_BigInt_bitAt(w_BigInt *this, int64_t bitIndex)
 // 堆的调整（小根堆）
 #define w_Heap_adjust_(T) w_concat(w_Heap(T), _adjust_)
 #define w_Heap_adjust_define_(T)                                                                  \
+    /**                                                                                           \
+     * 堆的调整（小根堆）                                                                \
+     * @param this 堆的指针                                                                   \
+     * @param root 根节点                                                                      \
+     * @return void                                                                               \
+     */                                                                                           \
     static inline void w_Heap_adjust_(T)(w_Heap(T) * this, int64_t root)                          \
     {                                                                                             \
         w_assert(this != NULL);                                                                   \
@@ -3441,6 +3457,12 @@ static inline int8_t w_BigInt_bitAt(w_BigInt *this, int64_t bitIndex)
 // 入堆
 #define w_Heap_push(T) w_concat(w_Heap(T), _push)
 #define w_Heap_push_define_(T)                                     \
+    /**                                                            \
+     * 入堆                                                      \
+     * @param this 堆的指针                                    \
+     * @param element 元素                                       \
+     * @return void                                                \
+     */                                                            \
     static inline void w_Heap_push(T)(w_Heap(T) * this, T element) \
     {                                                              \
         w_assert(this != NULL);                                    \
@@ -3451,6 +3473,12 @@ static inline int8_t w_BigInt_bitAt(w_BigInt *this, int64_t bitIndex)
 // 出堆
 #define w_Heap_pop(T) w_concat(w_Heap(T), _pop)
 #define w_Heap_pop_define_(T)                                      \
+    /**                                                            \
+     * 出堆                                                      \
+     * @param this 堆的指针                                    \
+     * @param result 结果                                        \
+     * @return void                                                \
+     */                                                            \
     static inline void w_Heap_pop(T)(w_Heap(T) * this, T * result) \
     {                                                              \
         w_assert(this != NULL);                                    \
@@ -3461,6 +3489,11 @@ static inline int8_t w_BigInt_bitAt(w_BigInt *this, int64_t bitIndex)
 // 大小
 #define w_Heap_size(T) w_concat(w_Heap(T), _size)
 #define w_Heap_size_define_(T)                             \
+    /**                                                    \
+     * 堆的大小                                        \
+     * @param this 堆的指针                            \
+     * @return 堆的大小                                \
+     */                                                    \
     static inline int64_t w_Heap_size(T)(w_Heap(T) * this) \
     {                                                      \
         w_assert(this != NULL);                            \
